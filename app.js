@@ -294,7 +294,7 @@ function loadEmbed() {
   if (song.platform === 'soundcloud') {
     // Show the visible SC embed panel; hide the audio-bar playing state
     const enc = encodeURIComponent(song.url);
-    if (scFr)   scFr.src = `https://w.soundcloud.com/player/?url=${enc}&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false&color=%23ff5500`;
+    if (scFr)   scFr.src = `https://w.soundcloud.com/player/?url=${enc}&hide_related=true&show_comments=false&show_user=true&show_reposts=false&visual=true&color=%23ff5500`;
     if (scWrap) scWrap.style.display = '';
     // Audio bar shows track name as "now selected"
     if (ph)  ph.style.display = 'none';
@@ -765,7 +765,7 @@ function vLoadEmbed() {
 
   if (song.platform === 'soundcloud') {
     const enc = encodeURIComponent(song.url);
-    if (scFr)   scFr.src = `https://w.soundcloud.com/player/?url=${enc}&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false&color=%23ff5500`;
+    if (scFr)   scFr.src = `https://w.soundcloud.com/player/?url=${enc}&hide_related=true&show_comments=false&show_user=true&show_reposts=false&visual=true&color=%23ff5500`;
     if (scWrap) scWrap.style.display = '';
     if (ph)  ph.style.display = 'none';
     if (pl)  pl.style.display = 'flex';
