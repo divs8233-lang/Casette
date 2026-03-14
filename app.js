@@ -12,8 +12,6 @@ let recLabelBg  = '#8b5cf6';
 let recLabelFg  = '#e8d8ff';
 let tapeTitle   = '';
 let tapeSub     = '';
-let coverDataUrl = '';
-let coverThumb   = '';   // compressed version for URL encoding
 
 let simTime     = 0;
 let simDur      = 200;
@@ -49,16 +47,7 @@ function goTab(name, el) {
 
 
 /* ── Label colours ── */
-function setCC(el, bg, fg) {
-  document.querySelectorAll('#chipRow .cc').forEach(c => {
-    c.classList.remove('sel');
-    c.setAttribute('aria-checked', 'false');
-  });
-  el.classList.add('sel');
-  el.setAttribute('aria-checked', 'true');
-  labelBg = bg; labelFg = fg;
-  applyLabelToAll();
-}
+
 
 function setRecCC(el, bg, fg) {
   document.querySelectorAll('#recChips .cc').forEach(c => {
@@ -74,58 +63,25 @@ function setRecCC(el, bg, fg) {
 }
 
 function applyLabelToAll() {
-  const cassArea = document.getElementById('cassLabelArea');
-  const mtLabel  = document.getElementById('mtLabel');
-  if (cassArea) cassArea.style.background = labelBg;
-  if (mtLabel)  mtLabel.style.background  = labelBg;
-
-  ['cassLabelText', 'mtTitle', 'mtSub'].forEach(id => {
+  ['cassLabelArea','mtLabel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.background = labelBg;
+  });
+  ['cassLabelText','mtTitle','mtSub'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.color = labelFg;
   });
+  // Update colour wheel preview swatches
+  const sw  = document.getElementById('cwSwatch');
+  const hex = document.getElementById('cwHex');
+  if (sw)  sw.style.background = labelBg;
+  if (hex) hex.textContent     = labelBg;
 }
 
 /* ── Cover upload ── */
-function handleCoverUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    coverDataUrl = ev.target.result;
-    // Apply full image to all editor cassettes
-    ['cassLabelImg', 'mtLabelImg', 'bclImg', 'bscImg'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.src = coverDataUrl; el.classList.add('show'); }
-    });
-    const prev = document.getElementById('coverPreview');
-    if (prev) { prev.src = coverDataUrl; prev.classList.add('show'); }
-    const inner = document.getElementById('cuaInner');
-    if (inner) inner.style.display = 'none';
-    // Generate compressed thumbnail for URL encoding
-    compressCoverForUrl(coverDataUrl);
-  };
-  reader.readAsDataURL(file);
-}
 
-/* Compress cover image down to ~80x80 JPEG for URL encoding */
-function compressCoverForUrl(dataUrl) {
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width  = 80;
-    canvas.height = 80;
-    const ctx = canvas.getContext('2d');
-    // Crop to square from centre
-    const size = Math.min(img.width, img.height);
-    const sx = (img.width  - size) / 2;
-    const sy = (img.height - size) / 2;
-    ctx.drawImage(img, sx, sy, size, size, 0, 0, 80, 80);
-    coverThumb = canvas.toDataURL('image/jpeg', 0.55);
-    // Update URL immediately
-    pushStateToUrl();
-  };
-  img.src = dataUrl;
-}
+
+
 
 /* ── Add song ── */
 function addItem() {
@@ -446,12 +402,7 @@ function saveTape() {
   if (bscSub)   { bscSub.textContent   = tapeSub;   bscSub.style.color   = labelFg; }
   if (bscCount) bscCount.style.color = labelBg;
 
-  if (coverDataUrl) {
-    ['bscImg', 'bclImg'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.src = coverDataUrl; el.classList.add('show'); }
-    });
-  }
+
 
   applyLabelToAll();
   onTapeChanged();
@@ -477,52 +428,77 @@ function saveTape() {
    Cover images are NOT included (too large for a URL).
    ════════════════════════════════════════════════════════════ */
 
+/* ── URL STATE ENCODING ─────────────────────────────────────
+   Cover images are stored in localStorage under a short ID.
+   Only the ID goes in the URL, keeping it short.
+   Tape data uses minimal keys: t=title, s=sub, a=artist,
+   y=year, m=msg, b=labelBg, f=labelFg, c=coverID, q=songs
+   ─────────────────────────────────────────────────────────── */
+
+
+
+
+
+
 function buildStatePayload() {
-  return {
-    title:   tapeTitle  || '',
-    sub:     tapeSub    || '',
-    artist:  document.getElementById('recArtist') ? document.getElementById('recArtist').value : '',
-    year:    document.getElementById('recYear')   ? document.getElementById('recYear').value   : '',
-    msg:     document.getElementById('recMsg')    ? document.getElementById('recMsg').value    : '',
-    labelBg: labelBg,
-    labelFg: labelFg,
-    cover:   coverThumb || '',
-    songs:   songs.map(s => ({ name: s.name, url: s.url }))
-  };
+  const p = {};
+  if (tapeTitle) p.t = tapeTitle;
+  if (tapeSub)   p.s = tapeSub;
+  const artist = (document.getElementById('recArtist') || {}).value || '';
+  const year   = (document.getElementById('recYear')   || {}).value || '';
+  const msg    = (document.getElementById('recMsg')    || {}).value || '';
+  if (artist) p.a = artist;
+  if (year)   p.y = year;
+  if (msg)    p.m = msg;
+  // Store hex colours without leading # to save 2 chars each
+  p.b = labelBg.replace('#', '');
+  p.f = labelFg.replace('#', '');
+  // Songs: just YouTube video ID (11 chars) instead of full URL
+  p.q = songs.map(s => ({ n: s.name, v: getYTId(s.url) || s.url }));
+  return p;
 }
 
 function encodeState(payload) {
   try {
-    const json    = JSON.stringify(payload);
-    const b64     = btoa(unescape(encodeURIComponent(json)));
-    // Make base64 URL-safe
+    const json = JSON.stringify(payload);
+    const b64  = btoa(unescape(encodeURIComponent(json)));
     return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  } catch (e) {
-    console.error('encodeState failed', e);
-    return '';
-  }
+  } catch(e) { return ''; }
 }
 
 function decodeState(hash) {
   try {
-    // Strip leading # and version prefix
-    const raw  = hash.replace(/^#/, '').replace(/^v1\//, '');
-    // Restore base64 padding
+    const raw  = hash.replace(/^#/, '').replace(/^v[12]\//, '');
     const b64  = raw.replace(/-/g, '+').replace(/_/g, '/');
     const pad  = b64.length % 4 ? b64 + '===='.slice(b64.length % 4) : b64;
     const json = decodeURIComponent(escape(atob(pad)));
-    return JSON.parse(json);
-  } catch (e) {
-    console.error('decodeState failed', e);
-    return null;
-  }
+    const p    = JSON.parse(json);
+    // Normalise: support both old long-key format and new short-key format
+    return {
+      title:   p.title   || p.t || '',
+      sub:     p.sub     || p.s || '',
+      artist:  p.artist  || p.a || '',
+      year:    p.year    || p.y || '',
+      msg:     p.msg     || p.m || '',
+      labelBg: p.labelBg ? p.labelBg : (p.b ? '#'+p.b : '#8b5cf6'),
+      labelFg: p.labelFg ? p.labelFg : (p.f ? '#'+p.f : '#e8d8ff'),
+      songs: (p.songs || p.q || []).map(s => ({
+        name: s.name || s.n || '',
+        // restore full YouTube URL from short ID
+        url:  s.url  ? s.url
+              : s.v && s.v.length === 11
+                ? 'https://www.youtube.com/watch?v=' + s.v
+                : s.v || ''
+      }))
+    };
+  } catch(e) { console.error('decodeState', e); return null; }
 }
 
 function buildShareUrl() {
   const payload = buildStatePayload();
   const encoded = encodeState(payload);
   const base    = window.location.href.split('#')[0];
-  return `${base}#v1/${encoded}`;
+  return `${base}#v2/${encoded}`;
 }
 
 /* Load tape state from URL hash on page load */
@@ -553,19 +529,7 @@ function loadFromHash() {
     type:     'single'
   }));
 
-  // Restore cover image if present
-  if (state.cover) {
-    coverDataUrl = state.cover;
-    coverThumb   = state.cover;
-    ['cassLabelImg','mtLabelImg','bclImg','bscImg'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.src = state.cover; el.classList.add('show'); }
-    });
-    const prev = document.getElementById('coverPreview');
-    if (prev) { prev.src = state.cover; prev.classList.add('show'); }
-    const inner = document.getElementById('cuaInner');
-    if (inner) inner.style.display = 'none';
-  }
+
 
   // Re-render everything
   renderList();
@@ -766,12 +730,7 @@ function showViewMode(state) {
   const vct = document.getElementById('vCassText');
   if (vct) { vct.textContent = title.slice(0, 12); vct.style.color = fg; }
 
-  // Cover image
-  if (state.cover) {
-    ['vBigImg', 'vCassImg'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.src = state.cover; el.classList.add('show'); }
-    });
+);
   }
 
   // Meta info (artist, year, message)
@@ -997,3 +956,139 @@ function vStartWave() {
   }
   drawV();
 }
+
+/* ══════════════════════════════════════════════════════════════
+   COLOUR WHEELS — HSL wheel drawn on canvas
+   Click anywhere to pick label colour.
+   Brightness (lightness) is calculated from the Y position.
+   ══════════════════════════════════════════════════════════════ */
+
+function drawWheel(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx  = canvas.width  / 2;
+  const cy  = canvas.height / 2;
+  const r   = cx - 2;
+
+  // Draw full HSL hue wheel
+  for (let angle = 0; angle < 360; angle++) {
+    const startAngle = (angle - 1) * Math.PI / 180;
+    const endAngle   =  angle      * Math.PI / 180;
+    // Inner gradient: white centre → saturated colour → black outer ring
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    grad.addColorStop(0,   'white');
+    grad.addColorStop(0.5, `hsl(${angle}, 100%, 50%)`);
+    grad.addColorStop(1,   'black');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  // White dot at current colour position
+  const pos = hslToWheelPos(labelBg, cx, cy, r);
+  if (pos) {
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
+function hslToWheelPos(hex, cx, cy, r) {
+  try {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return null;
+    const {h, s, l} = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const angle = h * Math.PI / 180;
+    const dist  = s * (l < 0.5 ? l * 2 : (1 - l) * 2) * r * 0.48 + (0.5 - Math.abs(l - 0.5)) * r * 0.5;
+    return {
+      x: cx + Math.cos(angle) * Math.min(dist, r - 4),
+      y: cy + Math.sin(angle) * Math.min(dist, r - 4)
+    };
+  } catch(e) { return null; }
+}
+
+function wheelPickColour(event, canvasId, isRec) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width  / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = (event.clientX - rect.left) * scaleX;
+  const y = (event.clientY - rect.top)  * scaleY;
+
+  const ctx = canvas.getContext('2d');
+  const px  = ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+  if (px[3] < 10) return; // clicked outside wheel
+
+  const hex = rgbToHex(px[0], px[1], px[2]);
+  const fg  = luminance(px[0], px[1], px[2]) > 0.4 ? '#1a1a2a' : '#ffffff';
+
+  if (isRec) {
+    recLabelBg = hex; recLabelFg = fg;
+    const bcl = document.getElementById('bcLabel');
+    const bt  = document.getElementById('bclTitle');
+    const bs  = document.getElementById('bclSub');
+    const sw  = document.getElementById('recCwSwatch');
+    const hx  = document.getElementById('recCwHex');
+    if (bcl) bcl.style.background = hex;
+    if (bt)  bt.style.color       = fg;
+    if (bs)  bs.style.color       = fg;
+    if (sw)  sw.style.background  = hex;
+    if (hx)  hx.textContent       = hex;
+  } else {
+    labelBg = hex; labelFg = fg;
+    applyLabelToAll();
+    onTapeChanged();
+  }
+  // Redraw wheel with new indicator dot
+  drawWheel(canvasId);
+}
+
+function wheelClick(e)    { wheelPickColour(e, 'colourWheel',    false); }
+function recWheelClick(e) { wheelPickColour(e, 'recColourWheel', true);  }
+
+/* ── Colour utilities ── */
+function hexToRgb(hex) {
+  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r ? { r: parseInt(r[1],16), g: parseInt(r[2],16), b: parseInt(r[3],16) } : null;
+}
+function rgbToHex(r, g, b) {
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h, s, l = (max + min) / 2;
+  if (max === min) { h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch(max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+    h *= 360;
+  }
+  return { h, s, l };
+}
+function luminance(r, g, b) {
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
+
+/* Draw wheels after DOM loads */
+window.addEventListener('DOMContentLoaded', () => {
+  drawWheel('colourWheel');
+  drawWheel('recColourWheel');
+});

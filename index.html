@@ -87,7 +87,6 @@
                     <div class="cass-hub"></div>
                   </div>
                   <div class="cass-label-area" id="cassLabelArea" style="background:#8b5cf6;">
-                    <img class="cass-label-img" id="cassLabelImg" src="" alt="Tape cover">
                     <div class="cass-label-text" id="cassLabelText" style="color:#e8d8ff;">TAPE</div>
                   </div>
                   <div class="cass-reel" id="cr2">
@@ -162,29 +161,18 @@
               </div>
 
               <div class="label-section">
-                <div class="ls-title">Tape Label</div>
-                <div class="color-chips" id="chipRow" role="group" aria-label="Label colour">
-                  <div class="cc sel" style="background:#8b5cf6;" onclick="setCC(this,'#8b5cf6','#e8d8ff')" tabindex="0"></div>
-                  <div class="cc"     style="background:#ec4899;" onclick="setCC(this,'#ec4899','#ffe0f0')" tabindex="0"></div>
-                  <div class="cc"     style="background:#06b6d4;" onclick="setCC(this,'#06b6d4','#d0f0ff')" tabindex="0"></div>
-                  <div class="cc"     style="background:#22c55e;" onclick="setCC(this,'#22c55e','#d0fde0')" tabindex="0"></div>
-                  <div class="cc"     style="background:#f59e0b;" onclick="setCC(this,'#f59e0b','#fff3d0')" tabindex="0"></div>
-                  <div class="cc"     style="background:#ef4444;" onclick="setCC(this,'#ef4444','#ffd8d8')" tabindex="0"></div>
-                </div>
-                <label class="fi" style="margin-top:8px;">Upload Cover Image</label>
-                <div class="cover-upload-area" id="cuaEl">
-                  <input type="file" accept="image/*" id="coverFileInput" onchange="handleCoverUpload(event)">
-                  <img class="cover-preview" id="coverPreview" src="" alt="Cover preview">
-                  <div class="cua-inner" id="cuaInner">
-                    <div class="cua-icon" aria-hidden="true">🖼</div>
-                    <div class="cua-text">CLICK TO UPLOAD COVER</div>
+                <div class="ls-title">Tape Label Colour</div>
+                <div class="colour-wheel-wrap">
+                  <canvas id="colourWheel" width="140" height="140" onclick="wheelClick(event)" title="Click to pick label colour"></canvas>
+                  <div class="cw-preview-row">
+                    <div class="cw-swatch" id="cwSwatch" style="background:#8b5cf6;"></div>
+                    <div class="cw-hex" id="cwHex">#8b5cf6</div>
                   </div>
                 </div>
                 <div class="mini-tape">
                   <div class="mt-cass" aria-hidden="true">
                     <div class="mt-reel"></div>
                     <div class="mt-label" id="mtLabel" style="background:#8b5cf6;">
-                      <img class="mt-label-img" id="mtLabelImg" src="" alt="">
                       <div class="mt-label-text">
                         <div class="mtlt-title" id="mtTitle" style="color:#e8d8ff;">TAPE</div>
                         <div class="mtlt-sub"   id="mtSub"   style="color:#e8d8ff;">no title yet</div>
@@ -237,12 +225,12 @@
               </div>
               <div class="rec-field">
                 <label>Label Colour</label>
-                <div class="color-chips" id="recChips" role="group">
-                  <div class="cc sel" style="background:#8b5cf6;" onclick="setRecCC(this,'#8b5cf6','#e8d8ff')" tabindex="0"></div>
-                  <div class="cc"     style="background:#ec4899;" onclick="setRecCC(this,'#ec4899','#ffe0f0')" tabindex="0"></div>
-                  <div class="cc"     style="background:#06b6d4;" onclick="setRecCC(this,'#06b6d4','#d0f0ff')" tabindex="0"></div>
-                  <div class="cc"     style="background:#22c55e;" onclick="setRecCC(this,'#22c55e','#d0fde0')" tabindex="0"></div>
-                  <div class="cc"     style="background:#f59e0b;" onclick="setRecCC(this,'#f59e0b','#fff3d0')" tabindex="0"></div>
+                <div class="colour-wheel-wrap">
+                  <canvas id="recColourWheel" width="140" height="140" onclick="recWheelClick(event)" title="Click to pick label colour"></canvas>
+                  <div class="cw-preview-row">
+                    <div class="cw-swatch" id="recCwSwatch" style="background:#8b5cf6;"></div>
+                    <div class="cw-hex" id="recCwHex">#8b5cf6</div>
+                  </div>
                 </div>
               </div>
               <button class="save-btn" onclick="saveTape()">✿ Save Tape to Player</button>
@@ -250,7 +238,6 @@
             <div class="big-cass-vis">
               <div class="big-cassette">
                 <div class="big-cass-label" id="bcLabel" style="background:#8b5cf6;">
-                  <img class="bcl-img" id="bclImg" src="" alt="Tape cover">
                   <div class="bcl-title" id="bclTitle" style="color:#e8d8ff;">UNTITLED TAPE</div>
                   <div class="bcl-sub"   id="bclSub"   style="color:#e8d8ff;">add a vibe above</div>
                 </div>
@@ -273,7 +260,6 @@
           <div class="share-tape-preview">
             <div class="big-share-cass">
               <div class="bsc-label" id="bscLabel" style="background:#8b5cf6;">
-                <img class="bsc-img" id="bscImg" src="" alt="Tape cover">
                 <div class="bsc-title" id="bscTitle" style="color:#e8d8ff;">NO TITLE YET</div>
                 <div class="bsc-sub"   id="bscSub"   style="color:#e8d8ff;">set in record mode</div>
               </div>
@@ -286,7 +272,7 @@
             </div>
           </div>
           <div style="font-size:10px;color:#7799bb;font-family:'Nunito',sans-serif;margin-bottom:6px;">
-            ✿ This link contains your full tape including tracks, title, colours and cover image.
+            ✿ This link contains your full tape — tracks, title and colours. Share it with anyone!
           </div>
           <div class="share-link-row">
             <div class="share-link-box" id="shareLinkEl" style="cursor:text;user-select:all;">Add tracks &amp; save your tape to generate a link ✿</div>
@@ -357,7 +343,6 @@
                   <div class="cass-hub"></div>
                 </div>
                 <div class="cass-label-area" id="vCassLabel" style="background:#8b5cf6;">
-                  <img class="cass-label-img" id="vCassImg" src="" alt="Tape cover">
                   <div class="cass-label-text" id="vCassText" style="color:#e8d8ff;">TAPE</div>
                 </div>
                 <div class="cass-reel" id="vcr2">
@@ -420,7 +405,6 @@
           <div class="view-cass-card">
             <div class="view-big-cass">
               <div class="big-cass-label" id="vBigLabel" style="background:#8b5cf6;">
-                <img class="bcl-img" id="vBigImg" src="" alt="Tape cover">
                 <div class="bcl-title" id="vBigTitle" style="color:#e8d8ff;">TAPE</div>
                 <div class="bcl-sub"   id="vBigSub"   style="color:#e8d8ff;"></div>
               </div>
