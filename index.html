@@ -166,12 +166,15 @@
 
               <div class="label-section">
                 <div class="ls-title">Tape Label Colour</div>
-                <div class="colour-wheel-wrap">
-                  <canvas id="colourWheel" width="140" height="140" onclick="wheelClick(event)" title="Click to pick label colour"></canvas>
-                  <div class="cw-preview-row">
-                    <div class="cw-swatch" id="cwSwatch" style="background:#8b5cf6;"></div>
-                    <div class="cw-hex" id="cwHex">#8b5cf6</div>
-                  </div>
+                <div class="colour-chips-row" id="chipRow">
+                  <div class="cc sel" data-bg="#8b5cf6" style="background:#8b5cf6;" onclick="setCC('#8b5cf6','#e8d8ff')"></div>
+                  <div class="cc" data-bg="#ec4899" style="background:#ec4899;" onclick="setCC('#ec4899','#ffe0f0')"></div>
+                  <div class="cc" data-bg="#06b6d4" style="background:#06b6d4;" onclick="setCC('#06b6d4','#001a22')"></div>
+                  <div class="cc" data-bg="#22c55e" style="background:#22c55e;" onclick="setCC('#22c55e','#002210')"></div>
+                  <div class="cc" data-bg="#f59e0b" style="background:#f59e0b;" onclick="setCC('#f59e0b','#1a0d00')"></div>
+                  <div class="cc" data-bg="#ef4444" style="background:#ef4444;" onclick="setCC('#ef4444','#fff0f0')"></div>
+                  <div class="cc" data-bg="#1a1a2a" style="background:#1a1a2a;" onclick="setCC('#1a1a2a','#e8d8ff')"></div>
+                  <div class="cc" data-bg="#f0e6d3" style="background:#f0e6d3;" onclick="setCC('#f0e6d3','#2a1800')"></div>
                 </div>
                 <div class="mini-tape">
                   <div class="mt-cass" aria-hidden="true">

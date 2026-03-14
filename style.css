@@ -658,3 +658,16 @@ textarea  { resize: none; }
 
 /* SoundCloud badge colour */
 .badge-sc { background: #ff5500; color: #fff; }
+
+/* ── Colour chips (player tab) ── */
+.colour-chips-row {
+  display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px;
+}
+.cc {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.cc:hover  { transform: scale(1.18); }
+.cc.sel    { border-color: rgba(255,255,255,0.9); box-shadow: 0 0 0 2px rgba(0,0,0,0.3); transform: scale(1.1); }
