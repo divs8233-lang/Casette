@@ -13,7 +13,7 @@ let recLabelFg  = '#e8d8ff';
 let tapeTitle   = '';
 let tapeSub     = '';
 let coverDataUrl = '';
-let addType     = 'single';
+
 let simTime     = 0;
 let simDur      = 200;
 let progInt     = null;
@@ -45,14 +45,7 @@ function goTab(name, el) {
   if (name === 'share') refreshShare();
 }
 
-/* ── Add-type toggle ── */
-function setAddType(t, el) {
-  addType = t;
-  document.querySelectorAll('.tt-btn').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('singleForm').style.display   = t === 'single'   ? '' : 'none';
-  document.getElementById('playlistForm').style.display = t === 'playlist' ? '' : 'none';
-}
+
 
 /* ── Label colours ── */
 function setCC(el, bg, fg) {
@@ -110,26 +103,16 @@ function handleCoverUpload(e) {
   reader.readAsDataURL(file);
 }
 
-/* ── Add song / playlist ── */
+/* ── Add song ── */
 function addItem() {
-  if (addType === 'single') {
-    const name = document.getElementById('sName').value.trim();
-    const url  = document.getElementById('sUrl').value.trim();
-    const plat = document.getElementById('sPlatform').value;
-    if (!name) { showToast('Enter a song name ✿'); return; }
-    if (!url)  { showToast('Paste a URL ✿');        return; }
-    songs.push({ name, url, platform: plat, type: 'single' });
-    document.getElementById('sName').value = '';
-    document.getElementById('sUrl').value  = '';
-  } else {
-    const name = document.getElementById('plName').value.trim();
-    const url  = document.getElementById('plUrl').value.trim();
-    if (!name) { showToast('Enter a playlist name ✿'); return; }
-    if (!url)  { showToast('Paste a Spotify URL ✿');   return; }
-    songs.push({ name, url, platform: 'spotify', type: 'playlist' });
-    document.getElementById('plName').value = '';
-    document.getElementById('plUrl').value  = '';
-  }
+  const name = document.getElementById('sName').value.trim();
+  const url  = document.getElementById('sUrl').value.trim();
+  if (!name) { showToast('Enter a song name ✿'); return; }
+  if (!url)  { showToast('Paste a YouTube URL ✿'); return; }
+  if (!getYTId(url)) { showToast('That doesn\'t look like a YouTube URL ✿'); return; }
+  songs.push({ name, url, platform: 'youtube', type: 'single' });
+  document.getElementById('sName').value = '';
+  document.getElementById('sUrl').value  = '';
   renderList();
   onTapeChanged();
 }
@@ -149,10 +132,8 @@ function renderList() {
     return;
   }
   list.innerHTML = songs.map((s, i) => {
-    const badgeClass = s.type === 'playlist' ? 'badge-pl' : s.platform === 'youtube' ? 'badge-yt' : 'badge-sp';
-    const badgeLabel = s.type === 'playlist' ? 'PL' : s.platform === 'youtube' ? 'YT' : 'SP';
     return `<div class="song-item ${i === curIdx ? 'active' : ''}" onclick="selectTrack(${i})" role="listitem">
-      <span class="plat-badge ${badgeClass}">${badgeLabel}</span>
+      <span class="plat-badge badge-yt">YT</span>
       <span class="sname">${escHtml(s.name)}</span>
       <button class="del-btn" onclick="event.stopPropagation();removeSong(${i})" aria-label="Remove ${escHtml(s.name)}">✕</button>
     </div>`;
@@ -243,7 +224,7 @@ function updatePlayBtn() {
 function updateDisplay() {
   const s = songs[curIdx];
   document.getElementById('dispTrack').textContent = s ? s.name.toUpperCase() : 'NO TAPE LOADED';
-  document.getElementById('dispSrc').textContent   = s ? (s.type === 'playlist' ? 'PLAYLIST' : s.platform.toUpperCase()) : 'TAPE';
+  document.getElementById('dispSrc').textContent   = s ? 'YOUTUBE' : 'TAPE';
   const lt = document.getElementById('cassLabelText');
   if (lt && s) lt.textContent = s.name.slice(0, 12);
 }
@@ -283,79 +264,45 @@ function fmt(s) {
   return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
 }
 
-/* ── Embeds ── */
+/* ── YouTube audio (video hidden, only audio plays) ── */
 function getYTId(url) {
   const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
 }
-function getSPPlaylistId(url) {
-  const m = url.match(/playlist\/([a-zA-Z0-9]+)/);
-  return m ? m[1] : null;
-}
 
 function loadEmbed() {
-  const song  = songs[curIdx];
+  const song = songs[curIdx];
   if (!song) return;
-  const ph    = document.getElementById('ytPh');
-  const fr    = document.getElementById('ytFr');
-  const spw   = document.getElementById('spWrap');
-  const spfr  = document.getElementById('spFr');
-  const badge = document.getElementById('embedBadge');
+  const fr  = document.getElementById('ytFr');
+  const ph  = document.getElementById('audioBarPh');
+  const pl  = document.getElementById('audioBarPlaying');
+  const ttl = document.getElementById('audioBarTitle');
+  const lnk = document.getElementById('audioBarLink');
 
-  ph.classList.add('gone');
-  fr.classList.remove('open');
-  spw.classList.remove('open');
-  badge.style.display = 'none';
-
-  if (song.platform === 'youtube') {
-    const id = getYTId(song.url);
-    if (id) {
-      fr.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
-      fr.classList.add('open');
-      badge.style.display    = '';
-      badge.style.background = 'rgba(255,0,0,0.85)';
-      badge.textContent      = 'YOUTUBE';
-      return;
-    }
+  const id = getYTId(song.url);
+  if (id) {
+    // Audio-only: tiny 1px iframe plays sound, video never visible
+    fr.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+    ph.style.display  = 'none';
+    pl.style.display  = 'flex';
+    ttl.textContent   = song.name.toUpperCase();
+    lnk.href          = song.url;
+  } else {
+    ph.style.display  = '';
+    ph.textContent    = 'Invalid YouTube URL ✕';
+    pl.style.display  = 'none';
+    fr.src = '';
   }
-
-  if (song.platform === 'spotify') {
-    if (song.type === 'playlist') {
-      const id = getSPPlaylistId(song.url);
-      if (id) {
-        spfr.src = `https://open.spotify.com/embed/playlist/${id}?utm_source=generator`;
-        spw.classList.add('open');
-        badge.style.display    = '';
-        badge.style.background = 'rgba(29,185,84,0.9)';
-        badge.textContent      = 'SPOTIFY';
-        return;
-      }
-    } else {
-      // Single Spotify track — link out
-      ph.classList.remove('gone');
-      ph.innerHTML = `<span style="font-size:24px;">🎵</span>
-        <span style="font-size:12px;color:#888;cursor:pointer;"
-          onclick="window.open('${escHtml(song.url)}','_blank')">Open in Spotify ↗</span>`;
-      badge.style.display    = '';
-      badge.style.background = 'rgba(29,185,84,0.9)';
-      badge.textContent      = 'SPOTIFY';
-      return;
-    }
-  }
-
-  ph.classList.remove('gone');
-  ph.innerHTML = '<span style="font-size:24px;">▶</span><span>INVALID URL</span>';
 }
 
 function clearEmbed() {
-  const fr   = document.getElementById('ytFr');
-  const spfr = document.getElementById('spFr');
-  const ph   = document.getElementById('ytPh');
-  fr.classList.remove('open'); fr.src = '';
-  document.getElementById('spWrap').classList.remove('open'); spfr.src = '';
-  ph.classList.remove('gone');
-  ph.innerHTML = '<span style="font-size:24px;">▶</span><span>SELECT A TRACK</span>';
-  document.getElementById('embedBadge').style.display = 'none';
+  const fr  = document.getElementById('ytFr');
+  const ph  = document.getElementById('audioBarPh');
+  const pl  = document.getElementById('audioBarPlaying');
+  fr.src = '';
+  ph.style.display = '';
+  ph.textContent   = '\u266a select a track to play';
+  pl.style.display = 'none';
 }
 
 /* ── Waveform canvas ── */
@@ -501,7 +448,7 @@ function buildStatePayload() {
     msg:     document.getElementById('recMsg')    ? document.getElementById('recMsg').value    : '',
     labelBg: labelBg,
     labelFg: labelFg,
-    songs:   songs.map(s => ({ name: s.name, url: s.url, platform: s.platform, type: s.type }))
+    songs:   songs.map(s => ({ name: s.name, url: s.url }))
   };
 }
 
@@ -561,10 +508,10 @@ function loadFromHash() {
 
   // Restore songs
   songs = (state.songs || []).map(s => ({
-    name:     s.name     || '',
-    url:      s.url      || '',
-    platform: s.platform || 'youtube',
-    type:     s.type     || 'single'
+    name:     s.name || '',
+    url:      s.url  || '',
+    platform: 'youtube',
+    type:     'single'
   }));
 
   // Re-render everything
@@ -624,7 +571,7 @@ function refreshShare() {
     return;
   }
   tlItems.innerHTML = songs.map((s, i) =>
-    `<div class="tlp-item">${i + 1}. [${s.type === 'playlist' ? 'Playlist' : s.platform}] ${escHtml(s.name)}</div>`
+    `<div class="tlp-item">${i + 1}. ${escHtml(s.name)}</div>`
   ).join('');
 }
 
@@ -657,7 +604,7 @@ function downloadTape() {
   const url = buildShareUrl();
   let txt = `=== VHS MIX TAPE ===\n${tapeTitle}\n${tapeSub}\n\nTRACKLIST:\n`;
   songs.forEach((s, i) => {
-    txt += `${i + 1}. [${s.type === 'playlist' ? 'PLAYLIST' : s.platform.toUpperCase()}] ${s.name}\n   ${s.url}\n`;
+    txt += `${i + 1}. ${s.name}\n   ${s.url}\n`;
   });
   txt += `\n=== ${songs.length} ITEM${songs.length !== 1 ? 'S' : ''} ===`;
   txt += `\n\nSHAREABLE LINK:\n${url}`;
