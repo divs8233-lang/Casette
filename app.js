@@ -41,14 +41,17 @@ function setPlatform(plat, el) {
   currentPlatform = plat;
   document.querySelectorAll('.pt-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  const lbl = document.getElementById('sUrlLabel');
-  const inp = document.getElementById('sUrl');
+  const lbl  = document.getElementById('sUrlLabel');
+  const inp  = document.getElementById('sUrl');
+  const hint = document.getElementById('scHint');
   if (plat === 'youtube') {
-    if (lbl) lbl.textContent = 'YouTube URL';
-    if (inp) inp.placeholder = 'https://youtube.com/watch?v=...';
+    if (lbl)  lbl.textContent    = 'YouTube URL';
+    if (inp)  inp.placeholder    = 'https://youtube.com/watch?v=...';
+    if (hint) hint.style.display = 'none';
   } else {
-    if (lbl) lbl.textContent = 'SoundCloud URL';
-    if (inp) inp.placeholder = 'https://soundcloud.com/artist/track';
+    if (lbl)  lbl.textContent    = 'SoundCloud embed src URL';
+    if (inp)  inp.placeholder    = 'https://w.soundcloud.com/player/?url=...';
+    if (hint) hint.style.display = '';
   }
 }
 
@@ -100,7 +103,7 @@ function addItem() {
     showToast('Paste a valid YouTube URL ✿'); return;
   }
   if (currentPlatform === 'soundcloud' && !url.includes('soundcloud.com')) {
-    showToast('Paste a soundcloud.com URL ✿'); return;
+    showToast('Paste a SoundCloud embed src URL ✿'); return;
   }
   songs.push({ name, url, platform: currentPlatform });
   document.getElementById('sName').value = '';
@@ -763,7 +766,11 @@ function vLoadEmbed() {
   if (scWrap) scWrap.style.display = 'none';
 
   if (song.platform === 'soundcloud') {
-    if (scFr)   scFr.src = `https://w.soundcloud.com/player/?url=${song.url}&hide_related=true&show_comments=false&show_user=true&show_reposts=false&visual=true&color=%23ff5500`;
+    // If user pasted the embed src directly, use it; otherwise wrap the track URL
+    const scSrc = song.url.includes('w.soundcloud.com/player')
+      ? song.url
+      : `https://w.soundcloud.com/player/?url=${song.url}&hide_related=true&show_comments=false&show_user=true&show_reposts=false&visual=true&color=%23ff5500`;
+    if (scFr)   scFr.src = scSrc;
     if (scWrap) scWrap.style.display = '';
     if (ph)  ph.style.display = 'none';
     if (pl)  pl.style.display = 'flex';
