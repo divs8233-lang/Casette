@@ -35,15 +35,17 @@
     <div class="win7-clock" id="w7clock" aria-live="polite">Loading...</div>
   </div>
 
-  <!-- App Window -->
-  <main class="app-window" role="main">
+  <!-- ══════════════════════════════════════════
+       EDITOR MODE (default — creating a tape)
+       ══════════════════════════════════════════ -->
+  <main class="app-window" id="editorApp" role="main">
     <div class="titlebar" role="banner">
       <div class="tb-icon" aria-hidden="true">📼</div>
       <div class="tb-title">VHS Mix — Tape Studio</div>
       <div class="tb-btns" aria-label="Window controls">
-        <div class="tb-btn min" title="Minimise" aria-label="Minimise">–</div>
-        <div class="tb-btn max" title="Maximise" aria-label="Maximise">□</div>
-        <div class="tb-btn cls" title="Close" aria-label="Close">✕</div>
+        <div class="tb-btn min">–</div>
+        <div class="tb-btn max">□</div>
+        <div class="tb-btn cls">✕</div>
       </div>
     </div>
 
@@ -54,20 +56,16 @@
         <button class="tab"        role="tab" aria-selected="false" onclick="goTab('share',this)">♡ Share</button>
       </nav>
 
-      <!-- ── PLAYER ── -->
-      <section class="panel active" id="tab-player" role="tabpanel" aria-label="Player">
+      <!-- PLAYER -->
+      <section class="panel active" id="tab-player" role="tabpanel">
         <div class="layout">
-
-          <!-- Left: Sony Deck -->
           <div>
             <div class="sony-deck">
               <div class="sony-brand">
                 <div class="sony-logo">SONY</div>
                 <div class="sony-model">CMT-CP505MD</div>
               </div>
-
-              <!-- Amber display -->
-              <div class="sony-display" aria-live="polite" aria-label="Now playing display">
+              <div class="sony-display" aria-live="polite">
                 <div class="disp-top">
                   <div class="disp-source" id="dispSrc">TAPE</div>
                   <div class="disp-time"   id="dispTime">0:00</div>
@@ -79,9 +77,7 @@
                   <div class="disp-dot"></div>
                 </div>
               </div>
-
-              <!-- Tape slot -->
-              <div class="tape-slot-outer" aria-label="Tape slot">
+              <div class="tape-slot-outer">
                 <div class="slot-ridges" aria-hidden="true"></div>
                 <div class="cassette" id="cassEl" aria-hidden="true">
                   <div class="cass-reel" id="cr1">
@@ -103,19 +99,15 @@
                 </div>
                 <div class="slot-label" id="slotLbl">INSERT TAPE ▼</div>
               </div>
-
-              <!-- Transport controls -->
               <div class="sony-controls">
-                <button class="s-btn" onclick="prevTrack()" aria-label="Previous track">⏮ PREV</button>
-                <button class="s-btn play-btn" id="playBtn" onclick="togglePlay()" aria-label="Play / Pause">▶ PLAY</button>
-                <button class="s-btn" onclick="nextTrack()" aria-label="Next track">NEXT ⏭</button>
-                <button class="s-btn" onclick="ejectTape()" aria-label="Eject tape">⏏ EJECT</button>
+                <button class="s-btn" onclick="prevTrack()">⏮ PREV</button>
+                <button class="s-btn play-btn" id="playBtn" onclick="togglePlay()">▶ PLAY</button>
+                <button class="s-btn" onclick="nextTrack()">NEXT ⏭</button>
+                <button class="s-btn" onclick="ejectTape()">⏏ EJECT</button>
               </div>
-
-              <!-- Volume / progress -->
               <div class="knob-row">
                 <div class="vol-knob-wrap">
-                  <div class="vol-knob" id="volKnob" title="Volume" aria-hidden="true"></div>
+                  <div class="vol-knob" aria-hidden="true"></div>
                   <div class="knob-label">VOL</div>
                 </div>
                 <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="60"
@@ -125,96 +117,75 @@
                   <div class="knob-label">BASS</div>
                 </div>
               </div>
-
               <div class="prog-wrap">
-                <div class="prog-bar-bg" id="progBg" onclick="seekClick(event)"
-                  role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
-                  aria-label="Track progress" tabindex="0">
+                <div class="prog-bar-bg" id="progBg" onclick="seekClick(event)" role="progressbar"
+                  aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
                   <div id="progFill" class="prog-bar-fill" style="width:0%"></div>
                 </div>
                 <div class="prog-times" aria-hidden="true">
                   <span id="tCur">0:00</span><span id="tDur">0:00</span>
                 </div>
               </div>
-
-              <!-- Waveform -->
               <div class="wave-section" aria-hidden="true">
                 <div class="wave-lbl-row">
-                  <div class="w-dot" id="wDot"></div>
+                  <div class="w-dot"></div>
                   <div class="w-lbl">AUDIO OUT</div>
                 </div>
                 <canvas id="wc" width="280" height="44"></canvas>
               </div>
             </div>
-
-            <!-- Audio bar: iframe is 1px so only audio plays, no visible video -->
             <div class="audio-bar" id="audioBar">
               <div class="audio-bar-ph" id="audioBarPh">&#9834; select a track to play</div>
               <div class="audio-bar-playing" id="audioBarPlaying" style="display:none;">
-                <div class="audio-bar-dot" id="audioBarDot"></div>
+                <div class="audio-bar-dot"></div>
                 <div class="audio-bar-title" id="audioBarTitle">&#8212;</div>
                 <a class="audio-bar-yt" id="audioBarLink" href="#" target="_blank" rel="noopener">YT &#8599;</a>
               </div>
-              <iframe id="ytFr" src="" allow="autoplay; clipboard-write; encrypted-media"
-                style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:none;top:0;left:0;"
-                title="YouTube audio"></iframe>
+
             </div>
           </div>
 
-          <!-- Right: Song panel -->
+          <!-- Song panel -->
           <div>
             <div class="song-panel">
               <div class="sp-title">Add to Tracklist</div>
-
-
-
-              <div id="singleForm">
-                <div style="margin-bottom:6px;">
-                  <label class="fi" for="sName">Song Name</label>
-                  <input type="text" id="sName" placeholder="e.g. Breathe (2 AM)" maxlength="40">
-                </div>
-                <label class="fi" for="sUrl">URL</label>
-                <input type="text" id="sUrl" placeholder="https://youtube.com/watch?v=...">
+              <div style="margin-bottom:6px;">
+                <label class="fi" for="sName">Song Name</label>
+                <input type="text" id="sName" placeholder="e.g. Breathe (2 AM)" maxlength="40">
               </div>
-
-
+              <label class="fi" for="sUrl">YouTube URL</label>
+              <input type="text" id="sUrl" placeholder="https://youtube.com/watch?v=...">
               <button class="add-btn" onclick="addItem()">+ Add to Tape</button>
 
-              <div class="song-list" id="songList" role="list" aria-label="Tracklist">
-                <div style="text-align:center;color:#aabbd0;font-size:11px;padding:12px 0;font-family:'Architects Daughter',cursive;">
-                  no tracks yet ✿
-                </div>
+              <div class="song-list" id="songList" role="list">
+                <div style="text-align:center;color:#aabbd0;font-size:11px;padding:12px 0;font-family:'Architects Daughter',cursive;">no tracks yet ✿</div>
               </div>
 
-              <!-- Label customiser -->
               <div class="label-section">
                 <div class="ls-title">Tape Label</div>
                 <div class="color-chips" id="chipRow" role="group" aria-label="Label colour">
-                  <div class="cc sel" style="background:#8b5cf6;" onclick="setCC(this,'#8b5cf6','#e8d8ff')" role="radio" aria-checked="true"  aria-label="Purple" tabindex="0"></div>
-                  <div class="cc"     style="background:#ec4899;" onclick="setCC(this,'#ec4899','#ffe0f0')" role="radio" aria-checked="false" aria-label="Pink"   tabindex="0"></div>
-                  <div class="cc"     style="background:#06b6d4;" onclick="setCC(this,'#06b6d4','#d0f0ff')" role="radio" aria-checked="false" aria-label="Cyan"   tabindex="0"></div>
-                  <div class="cc"     style="background:#22c55e;" onclick="setCC(this,'#22c55e','#d0fde0')" role="radio" aria-checked="false" aria-label="Green"  tabindex="0"></div>
-                  <div class="cc"     style="background:#f59e0b;" onclick="setCC(this,'#f59e0b','#fff3d0')" role="radio" aria-checked="false" aria-label="Amber"  tabindex="0"></div>
-                  <div class="cc"     style="background:#ef4444;" onclick="setCC(this,'#ef4444','#ffd8d8')" role="radio" aria-checked="false" aria-label="Red"    tabindex="0"></div>
+                  <div class="cc sel" style="background:#8b5cf6;" onclick="setCC(this,'#8b5cf6','#e8d8ff')" tabindex="0"></div>
+                  <div class="cc"     style="background:#ec4899;" onclick="setCC(this,'#ec4899','#ffe0f0')" tabindex="0"></div>
+                  <div class="cc"     style="background:#06b6d4;" onclick="setCC(this,'#06b6d4','#d0f0ff')" tabindex="0"></div>
+                  <div class="cc"     style="background:#22c55e;" onclick="setCC(this,'#22c55e','#d0fde0')" tabindex="0"></div>
+                  <div class="cc"     style="background:#f59e0b;" onclick="setCC(this,'#f59e0b','#fff3d0')" tabindex="0"></div>
+                  <div class="cc"     style="background:#ef4444;" onclick="setCC(this,'#ef4444','#ffd8d8')" tabindex="0"></div>
                 </div>
-
                 <label class="fi" style="margin-top:8px;">Upload Cover Image</label>
                 <div class="cover-upload-area" id="cuaEl">
-                  <input type="file" accept="image/*" id="coverFileInput"
-                    onchange="handleCoverUpload(event)" aria-label="Upload cover image">
+                  <input type="file" accept="image/*" id="coverFileInput" onchange="handleCoverUpload(event)">
                   <img class="cover-preview" id="coverPreview" src="" alt="Cover preview">
                   <div class="cua-inner" id="cuaInner">
                     <div class="cua-icon" aria-hidden="true">🖼</div>
                     <div class="cua-text">CLICK TO UPLOAD COVER</div>
                   </div>
                 </div>
-
-                <div class="mini-tape" id="miniTape" aria-label="Tape preview">
+                <div class="mini-tape">
                   <div class="mt-cass" aria-hidden="true">
                     <div class="mt-reel"></div>
                     <div class="mt-label" id="mtLabel" style="background:#8b5cf6;">
                       <img class="mt-label-img" id="mtLabelImg" src="" alt="">
-                      <div class="mt-label-text" id="mtLabelText">
+                      <div class="mt-label-text">
                         <div class="mtlt-title" id="mtTitle" style="color:#e8d8ff;">TAPE</div>
                         <div class="mtlt-sub"   id="mtSub"   style="color:#e8d8ff;">no title yet</div>
                       </div>
@@ -233,8 +204,8 @@
         </div>
       </section>
 
-      <!-- ── RECORD ── -->
-      <section class="panel" id="tab-record" role="tabpanel" aria-label="Record">
+      <!-- RECORD -->
+      <section class="panel" id="tab-record" role="tabpanel">
         <div class="rec-window">
           <div class="rec-header-row">
             <div class="rec-indicator" id="recInd" aria-hidden="true"></div>
@@ -266,17 +237,16 @@
               </div>
               <div class="rec-field">
                 <label>Label Colour</label>
-                <div class="color-chips" id="recChips" role="group" aria-label="Label colour">
-                  <div class="cc sel" style="background:#8b5cf6;" onclick="setRecCC(this,'#8b5cf6','#e8d8ff')" role="radio" aria-checked="true"  aria-label="Purple" tabindex="0"></div>
-                  <div class="cc"     style="background:#ec4899;" onclick="setRecCC(this,'#ec4899','#ffe0f0')" role="radio" aria-checked="false" aria-label="Pink"   tabindex="0"></div>
-                  <div class="cc"     style="background:#06b6d4;" onclick="setRecCC(this,'#06b6d4','#d0f0ff')" role="radio" aria-checked="false" aria-label="Cyan"   tabindex="0"></div>
-                  <div class="cc"     style="background:#22c55e;" onclick="setRecCC(this,'#22c55e','#d0fde0')" role="radio" aria-checked="false" aria-label="Green"  tabindex="0"></div>
-                  <div class="cc"     style="background:#f59e0b;" onclick="setRecCC(this,'#f59e0b','#fff3d0')" role="radio" aria-checked="false" aria-label="Amber"  tabindex="0"></div>
+                <div class="color-chips" id="recChips" role="group">
+                  <div class="cc sel" style="background:#8b5cf6;" onclick="setRecCC(this,'#8b5cf6','#e8d8ff')" tabindex="0"></div>
+                  <div class="cc"     style="background:#ec4899;" onclick="setRecCC(this,'#ec4899','#ffe0f0')" tabindex="0"></div>
+                  <div class="cc"     style="background:#06b6d4;" onclick="setRecCC(this,'#06b6d4','#d0f0ff')" tabindex="0"></div>
+                  <div class="cc"     style="background:#22c55e;" onclick="setRecCC(this,'#22c55e','#d0fde0')" tabindex="0"></div>
+                  <div class="cc"     style="background:#f59e0b;" onclick="setRecCC(this,'#f59e0b','#fff3d0')" tabindex="0"></div>
                 </div>
               </div>
               <button class="save-btn" onclick="saveTape()">✿ Save Tape to Player</button>
             </div>
-
             <div class="big-cass-vis">
               <div class="big-cassette">
                 <div class="big-cass-label" id="bcLabel" style="background:#8b5cf6;">
@@ -285,30 +255,11 @@
                   <div class="bcl-sub"   id="bclSub"   style="color:#e8d8ff;">add a vibe above</div>
                 </div>
                 <div class="big-reels-row">
-                  <div class="big-reel">
-                    <div class="br-spokes" id="brs1">
-                      <div class="br-spoke" style="transform:rotate(0deg)"></div>
-                      <div class="br-spoke" style="transform:rotate(90deg)"></div>
-                      <div class="br-spoke" style="transform:rotate(180deg)"></div>
-                      <div class="br-spoke" style="transform:rotate(270deg)"></div>
-                    </div>
-                    <div class="br-hub"></div>
-                  </div>
-                  <div class="big-reel">
-                    <div class="br-spokes" id="brs2">
-                      <div class="br-spoke" style="transform:rotate(45deg)"></div>
-                      <div class="br-spoke" style="transform:rotate(135deg)"></div>
-                      <div class="br-spoke" style="transform:rotate(225deg)"></div>
-                      <div class="br-spoke" style="transform:rotate(315deg)"></div>
-                    </div>
-                    <div class="br-hub"></div>
-                  </div>
+                  <div class="big-reel"><div class="br-spokes" id="brs1"><div class="br-spoke" style="transform:rotate(0deg)"></div><div class="br-spoke" style="transform:rotate(90deg)"></div><div class="br-spoke" style="transform:rotate(180deg)"></div><div class="br-spoke" style="transform:rotate(270deg)"></div></div><div class="br-hub"></div></div>
+                  <div class="big-reel"><div class="br-spokes" id="brs2"><div class="br-spoke" style="transform:rotate(45deg)"></div><div class="br-spoke" style="transform:rotate(135deg)"></div><div class="br-spoke" style="transform:rotate(225deg)"></div><div class="br-spoke" style="transform:rotate(315deg)"></div></div><div class="br-hub"></div></div>
                 </div>
                 <div class="big-cass-tape-strip"></div>
-                <div class="big-cass-bottom">
-                  <div class="bc-screw"></div>
-                  <div class="bc-screw"></div>
-                </div>
+                <div class="big-cass-bottom"><div class="bc-screw"></div><div class="bc-screw"></div></div>
               </div>
               <div class="rec-counter-box" id="recCtr">00:00:00</div>
             </div>
@@ -316,8 +267,8 @@
         </div>
       </section>
 
-      <!-- ── SHARE ── -->
-      <section class="panel" id="tab-share" role="tabpanel" aria-label="Share">
+      <!-- SHARE -->
+      <section class="panel" id="tab-share" role="tabpanel">
         <div class="share-window">
           <div class="share-tape-preview">
             <div class="big-share-cass">
@@ -334,16 +285,11 @@
               <div class="bsc-count" id="bscCount" style="color:#8b5cf6;">0 tracks</div>
             </div>
           </div>
-
-          <div style="font-size:10px;color:#7799bb;font-family:'Nunito',sans-serif;margin-bottom:6px;letter-spacing:0.5px;">
-            ✿ This link contains your full tape — anyone who opens it will see the same tracks, title, and colours.
-            Cover images are not included in the link (re-upload on the other device).
+          <div style="font-size:10px;color:#7799bb;font-family:'Nunito',sans-serif;margin-bottom:6px;">
+            ✿ This link contains your full tape including tracks, title, colours and cover image.
           </div>
           <div class="share-link-row">
-            <div class="share-link-box" id="shareLinkEl" aria-label="Shareable link"
-              style="cursor:text;user-select:all;" title="Click to select all">
-              Add tracks &amp; save your tape to generate a link ✿
-            </div>
+            <div class="share-link-box" id="shareLinkEl" style="cursor:text;user-select:all;">Add tracks &amp; save your tape to generate a link ✿</div>
             <button class="sh-btn" onclick="copyLink()">Copy Link</button>
           </div>
           <div class="sh-btns-row">
@@ -351,8 +297,7 @@
             <button class="sh-btn" onclick="tweetTape()">Tweet This Tape</button>
             <button class="sh-btn" onclick="whatsappTape()">WhatsApp</button>
           </div>
-
-          <div class="tracklist-preview" id="tlPreview">
+          <div class="tracklist-preview">
             <div class="tlp-title">✿ Tracklist</div>
             <div id="tlItems" style="color:#aabbd0;font-size:11px;font-family:'Architects Daughter',cursive;">No tracks yet.</div>
           </div>
@@ -361,8 +306,158 @@
     </div>
   </main>
 
+  <!-- ══════════════════════════════════════════
+       VIEW MODE (shown when opening a shared link)
+       ══════════════════════════════════════════ -->
+  <main class="app-window view-mode" id="viewApp" style="display:none;" role="main">
+    <div class="titlebar">
+      <div class="tb-icon" aria-hidden="true">📼</div>
+      <div class="tb-title" id="viewTitleBar">VHS Mix</div>
+      <div class="tb-btns">
+        <div class="tb-btn min">–</div>
+        <div class="tb-btn max">□</div>
+        <div class="tb-btn cls">✕</div>
+      </div>
+    </div>
+
+    <div class="app-body">
+      <!-- "Make your own" CTA banner -->
+      <div class="view-cta">
+        <span>📼 Someone made you a tape!</span>
+        <a class="view-cta-btn" id="viewCtaBtn" href="#">✿ Make Your Own Tape</a>
+      </div>
+
+      <div class="view-layout">
+        <!-- Left: deck + player -->
+        <div>
+          <div class="sony-deck">
+            <div class="sony-brand">
+              <div class="sony-logo">SONY</div>
+              <div class="sony-model">CMT-CP505MD</div>
+            </div>
+            <div class="sony-display" aria-live="polite">
+              <div class="disp-top">
+                <div class="disp-source" id="vDispSrc">TAPE</div>
+                <div class="disp-time"   id="vDispTime">0:00</div>
+              </div>
+              <div class="disp-track" id="vDispTrack">NO TAPE LOADED</div>
+              <div class="disp-dots" aria-hidden="true">
+                <div class="disp-dot on"></div>
+                <div class="disp-dot" id="vPlayDot"></div>
+                <div class="disp-dot"></div>
+              </div>
+            </div>
+            <div class="tape-slot-outer">
+              <div class="slot-ridges" aria-hidden="true"></div>
+              <div class="cassette" id="vCassEl" aria-hidden="true">
+                <div class="cass-reel" id="vcr1">
+                  <div class="cass-spoke" style="transform:rotate(0deg)"></div>
+                  <div class="cass-spoke" style="transform:rotate(120deg)"></div>
+                  <div class="cass-spoke" style="transform:rotate(240deg)"></div>
+                  <div class="cass-hub"></div>
+                </div>
+                <div class="cass-label-area" id="vCassLabel" style="background:#8b5cf6;">
+                  <img class="cass-label-img" id="vCassImg" src="" alt="Tape cover">
+                  <div class="cass-label-text" id="vCassText" style="color:#e8d8ff;">TAPE</div>
+                </div>
+                <div class="cass-reel" id="vcr2">
+                  <div class="cass-spoke" style="transform:rotate(60deg)"></div>
+                  <div class="cass-spoke" style="transform:rotate(180deg)"></div>
+                  <div class="cass-spoke" style="transform:rotate(300deg)"></div>
+                  <div class="cass-hub"></div>
+                </div>
+              </div>
+              <div class="slot-label" id="vSlotLbl">INSERT TAPE ▼</div>
+            </div>
+            <div class="sony-controls">
+              <button class="s-btn" onclick="vPrevTrack()">⏮ PREV</button>
+              <button class="s-btn play-btn" id="vPlayBtn" onclick="vTogglePlay()">▶ PLAY</button>
+              <button class="s-btn" onclick="vNextTrack()">NEXT ⏭</button>
+              <button class="s-btn" onclick="vEjectTape()">⏏ EJECT</button>
+            </div>
+            <div class="knob-row">
+              <div class="vol-knob-wrap">
+                <div class="vol-knob" aria-hidden="true"></div>
+                <div class="knob-label">VOL</div>
+              </div>
+              <input type="range" class="vol-slider" min="0" max="100" value="60" aria-label="Volume">
+              <div class="vol-knob-wrap">
+                <div class="vol-knob" style="width:20px;height:20px;" aria-hidden="true"></div>
+                <div class="knob-label">BASS</div>
+              </div>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-bar-bg" id="vProgBg" onclick="vSeekClick(event)" role="progressbar"
+                aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+                <div id="vProgFill" class="prog-bar-fill" style="width:0%"></div>
+              </div>
+              <div class="prog-times" aria-hidden="true">
+                <span id="vTCur">0:00</span><span id="vTDur">0:00</span>
+              </div>
+            </div>
+            <div class="wave-section" aria-hidden="true">
+              <div class="wave-lbl-row">
+                <div class="w-dot" id="vWDot"></div>
+                <div class="w-lbl">AUDIO OUT</div>
+              </div>
+              <canvas id="vWc" width="280" height="44"></canvas>
+            </div>
+          </div>
+          <div class="audio-bar">
+            <div class="audio-bar-ph" id="vAudioPh">&#9834; select a track to play</div>
+            <div class="audio-bar-playing" id="vAudioPlaying" style="display:none;">
+              <div class="audio-bar-dot"></div>
+              <div class="audio-bar-title" id="vAudioTitle">&#8212;</div>
+              <a class="audio-bar-yt" id="vAudioLink" href="#" target="_blank" rel="noopener">YT &#8599;</a>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: big cassette + tracklist -->
+        <div>
+          <!-- Big cassette with cover -->
+          <div class="view-cass-card">
+            <div class="view-big-cass">
+              <div class="big-cass-label" id="vBigLabel" style="background:#8b5cf6;">
+                <img class="bcl-img" id="vBigImg" src="" alt="Tape cover">
+                <div class="bcl-title" id="vBigTitle" style="color:#e8d8ff;">TAPE</div>
+                <div class="bcl-sub"   id="vBigSub"   style="color:#e8d8ff;"></div>
+              </div>
+              <div class="big-reels-row">
+                <div class="big-reel"><div class="br-spokes" id="vBrs1"><div class="br-spoke" style="transform:rotate(0deg)"></div><div class="br-spoke" style="transform:rotate(90deg)"></div><div class="br-spoke" style="transform:rotate(180deg)"></div><div class="br-spoke" style="transform:rotate(270deg)"></div></div><div class="br-hub"></div></div>
+                <div class="big-reel"><div class="br-spokes" id="vBrs2"><div class="br-spoke" style="transform:rotate(45deg)"></div><div class="br-spoke" style="transform:rotate(135deg)"></div><div class="br-spoke" style="transform:rotate(225deg)"></div><div class="br-spoke" style="transform:rotate(315deg)"></div></div><div class="br-hub"></div></div>
+              </div>
+              <div class="big-cass-tape-strip"></div>
+              <div class="big-cass-bottom"><div class="bc-screw"></div><div class="bc-screw"></div></div>
+            </div>
+            <!-- Meta info -->
+            <div class="view-meta" id="viewMeta"></div>
+          </div>
+
+          <!-- Tracklist (read-only) -->
+          <div class="view-tracklist">
+            <div class="view-tl-title">✿ Tracklist</div>
+            <div id="vSongList" class="song-list" role="list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
   <div class="toast" id="toast" role="status" aria-live="polite">Done!</div>
 
+  <!-- YouTube iframes off-screen at real size — browsers allow autoplay, users never see video -->
+  <div style="position:fixed;left:-9999px;top:-9999px;width:200px;height:113px;overflow:hidden;" aria-hidden="true">
+    <iframe id="ytFr" src="" width="200" height="113"
+      allow="autoplay; clipboard-write; encrypted-media"
+      allowfullscreen frameborder="0" title="YouTube audio"></iframe>
+  </div>
+  <div style="position:fixed;left:-9999px;top:-9999px;width:200px;height:113px;overflow:hidden;" aria-hidden="true">
+    <iframe id="vYtFr" src="" width="200" height="113"
+      allow="autoplay; clipboard-write; encrypted-media"
+      allowfullscreen frameborder="0" title="YouTube audio view"></iframe>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>

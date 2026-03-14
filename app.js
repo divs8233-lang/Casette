@@ -13,6 +13,7 @@ let recLabelFg  = '#e8d8ff';
 let tapeTitle   = '';
 let tapeSub     = '';
 let coverDataUrl = '';
+let coverThumb   = '';   // compressed version for URL encoding
 
 let simTime     = 0;
 let simDur      = 200;
@@ -91,6 +92,7 @@ function handleCoverUpload(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     coverDataUrl = ev.target.result;
+    // Apply full image to all editor cassettes
     ['cassLabelImg', 'mtLabelImg', 'bclImg', 'bscImg'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.src = coverDataUrl; el.classList.add('show'); }
@@ -99,8 +101,30 @@ function handleCoverUpload(e) {
     if (prev) { prev.src = coverDataUrl; prev.classList.add('show'); }
     const inner = document.getElementById('cuaInner');
     if (inner) inner.style.display = 'none';
+    // Generate compressed thumbnail for URL encoding
+    compressCoverForUrl(coverDataUrl);
   };
   reader.readAsDataURL(file);
+}
+
+/* Compress cover image down to ~80x80 JPEG for URL encoding */
+function compressCoverForUrl(dataUrl) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width  = 80;
+    canvas.height = 80;
+    const ctx = canvas.getContext('2d');
+    // Crop to square from centre
+    const size = Math.min(img.width, img.height);
+    const sx = (img.width  - size) / 2;
+    const sy = (img.height - size) / 2;
+    ctx.drawImage(img, sx, sy, size, size, 0, 0, 80, 80);
+    coverThumb = canvas.toDataURL('image/jpeg', 0.55);
+    // Update URL immediately
+    pushStateToUrl();
+  };
+  img.src = dataUrl;
 }
 
 /* ── Add song ── */
@@ -462,6 +486,7 @@ function buildStatePayload() {
     msg:     document.getElementById('recMsg')    ? document.getElementById('recMsg').value    : '',
     labelBg: labelBg,
     labelFg: labelFg,
+    cover:   coverThumb || '',
     songs:   songs.map(s => ({ name: s.name, url: s.url }))
   };
 }
@@ -528,14 +553,26 @@ function loadFromHash() {
     type:     'single'
   }));
 
+  // Restore cover image if present
+  if (state.cover) {
+    coverDataUrl = state.cover;
+    coverThumb   = state.cover;
+    ['cassLabelImg','mtLabelImg','bclImg','bscImg'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.src = state.cover; el.classList.add('show'); }
+    });
+    const prev = document.getElementById('coverPreview');
+    if (prev) { prev.src = state.cover; prev.classList.add('show'); }
+    const inner = document.getElementById('cuaInner');
+    if (inner) inner.style.display = 'none';
+  }
+
   // Re-render everything
   renderList();
   updateMiniTape();
   applyLabelToAll();
-  saveTape();          // applies title/sub/colours to all UI elements
-
-  // Show a "loaded from link" banner
-  showSharedBanner(tapeTitle);
+  saveTape();
+  showViewMode(state);
 }
 
 function showSharedBanner(title) {
@@ -685,3 +722,278 @@ window.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('hashchange', () => {
   loadFromHash();
 });
+
+/* ══════════════════════════════════════════════════════════════
+   VIEW MODE — shown when someone opens a shared tape link.
+   Completely separate player state from the editor.
+   ══════════════════════════════════════════════════════════════ */
+
+let vSongs   = [];
+let vCurIdx  = -1;
+let vPlaying = false;
+let vSimTime = 0, vSimDur = 200, vProgInt = null, vAfId = null;
+
+function showViewMode(state) {
+  // Hide editor, show viewer
+  const editor = document.getElementById('editorApp');
+  const viewer = document.getElementById('viewApp');
+  if (editor) editor.style.display = 'none';
+  if (!viewer) return;
+  viewer.style.display = '';
+
+  // Update window title
+  const title = state.title || 'Untitled Tape';
+  document.title = title + ' — VHS Mix';
+  const tb = document.getElementById('viewTitleBar');
+  if (tb) tb.textContent = '📼 ' + title;
+
+  // "Make your own" button points to same page without hash
+  const ctaBtn = document.getElementById('viewCtaBtn');
+  if (ctaBtn) ctaBtn.href = window.location.href.split('#')[0];
+
+  // Apply cassette label
+  const bg = state.labelBg || '#8b5cf6';
+  const fg = state.labelFg || '#e8d8ff';
+  const vbl = document.getElementById('vBigLabel');
+  if (vbl) vbl.style.background = bg;
+  const vbt = document.getElementById('vBigTitle');
+  if (vbt) { vbt.textContent = title; vbt.style.color = fg; }
+  const vbs = document.getElementById('vBigSub');
+  if (vbs) { vbs.textContent = state.sub || ''; vbs.style.color = fg; }
+
+  const vcl = document.getElementById('vCassLabel');
+  if (vcl) vcl.style.background = bg;
+  const vct = document.getElementById('vCassText');
+  if (vct) { vct.textContent = title.slice(0, 12); vct.style.color = fg; }
+
+  // Cover image
+  if (state.cover) {
+    ['vBigImg', 'vCassImg'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.src = state.cover; el.classList.add('show'); }
+    });
+  }
+
+  // Meta info (artist, year, message)
+  const metaEl = document.getElementById('viewMeta');
+  if (metaEl) {
+    let html = '';
+    if (state.artist || state.year) {
+      html += `<div class="vm-row">`;
+      if (state.artist) html += `<strong>Mix by</strong> ${escHtml(state.artist)}`;
+      if (state.artist && state.year) html += ' &bull; ';
+      if (state.year) html += escHtml(state.year);
+      html += `</div>`;
+    }
+    if (state.msg) {
+      html += `<div class="vm-msg">"${escHtml(state.msg)}"</div>`;
+    }
+    metaEl.innerHTML = html;
+  }
+
+  // Load songs
+  vSongs = (state.songs || []).map(s => ({ name: s.name || '', url: s.url || '' }));
+  vRenderList();
+
+  // Start waveform
+  vStartWave();
+}
+
+function vRenderList() {
+  const list = document.getElementById('vSongList');
+  if (!list) return;
+  if (!vSongs.length) {
+    list.innerHTML = '<div style="color:#aabbd0;font-size:11px;padding:8px 0;font-family:\'Architects Daughter\',cursive;">No tracks on this tape ✿</div>';
+    return;
+  }
+  list.innerHTML = vSongs.map((s, i) =>
+    `<div class="song-item ${i === vCurIdx ? 'active' : ''}" onclick="vSelectTrack(${i})" role="listitem">
+      <span class="plat-badge badge-yt">YT</span>
+      <span class="sname">${escHtml(s.name)}</span>
+    </div>`
+  ).join('');
+}
+
+function vSelectTrack(i) {
+  vCurIdx = i; vPlaying = true;
+  vRenderList();
+  vInsertCass();
+  vLoadEmbed();
+  vStartWave();
+  vUpdateDisplay();
+  vUpdatePlayBtn();
+  vStartProg();
+}
+
+function vInsertCass() {
+  const c = document.getElementById('vCassEl');
+  const l = document.getElementById('vSlotLbl');
+  const brs1 = document.getElementById('vBrs1');
+  const brs2 = document.getElementById('vBrs2');
+  if (c) c.classList.add('in');
+  if (l) l.style.display = 'none';
+  if (document.getElementById('vcr1')) document.getElementById('vcr1').classList.add('rolling');
+  if (document.getElementById('vcr2')) document.getElementById('vcr2').classList.add('rolling');
+  if (brs1) brs1.classList.add('roll');
+  if (brs2) brs2.classList.add('roll');
+}
+
+function vEjectTape() {
+  const c = document.getElementById('vCassEl');
+  const l = document.getElementById('vSlotLbl');
+  if (c) c.classList.remove('in');
+  if (l) l.style.display = '';
+  if (document.getElementById('vcr1')) document.getElementById('vcr1').classList.remove('rolling');
+  if (document.getElementById('vcr2')) document.getElementById('vcr2').classList.remove('rolling');
+  const brs1 = document.getElementById('vBrs1');
+  const brs2 = document.getElementById('vBrs2');
+  if (brs1) brs1.classList.remove('roll');
+  if (brs2) brs2.classList.remove('roll');
+  vPlaying = false;
+  vUpdatePlayBtn();
+  const dt = document.getElementById('vDispTrack');
+  if (dt) dt.textContent = 'NO TAPE LOADED';
+  const pf = document.getElementById('vProgFill');
+  if (pf) pf.style.width = '0%';
+  vClearEmbed();
+  clearInterval(vProgInt);
+}
+
+function vTogglePlay() {
+  if (!vSongs.length) return;
+  if (vCurIdx < 0) { vSelectTrack(0); return; }
+  vPlaying = !vPlaying;
+  vUpdatePlayBtn();
+  if (vPlaying) {
+    vInsertCass();
+  } else {
+    if (document.getElementById('vcr1')) document.getElementById('vcr1').classList.remove('rolling');
+    if (document.getElementById('vcr2')) document.getElementById('vcr2').classList.remove('rolling');
+  }
+}
+
+function vPrevTrack() {
+  if (!vSongs.length) return;
+  vCurIdx = (vCurIdx - 1 + vSongs.length) % vSongs.length;
+  vPlaying = true;
+  vRenderList(); vInsertCass(); vLoadEmbed(); vStartWave(); vUpdateDisplay(); vUpdatePlayBtn(); vStartProg();
+}
+
+function vNextTrack() {
+  if (!vSongs.length) return;
+  vCurIdx = (vCurIdx + 1) % vSongs.length;
+  vPlaying = true;
+  vRenderList(); vInsertCass(); vLoadEmbed(); vStartWave(); vUpdateDisplay(); vUpdatePlayBtn(); vStartProg();
+}
+
+function vUpdatePlayBtn() {
+  const b  = document.getElementById('vPlayBtn');
+  const pd = document.getElementById('vPlayDot');
+  if (b)  b.textContent = vPlaying ? '⏸ PAUSE' : '▶ PLAY';
+  if (pd) pd.classList.toggle('on', vPlaying);
+}
+
+function vUpdateDisplay() {
+  const s = vSongs[vCurIdx];
+  const dt = document.getElementById('vDispTrack');
+  const ds = document.getElementById('vDispSrc');
+  if (dt) dt.textContent = s ? s.name.toUpperCase() : 'NO TAPE LOADED';
+  if (ds) ds.textContent = s ? 'YOUTUBE' : 'TAPE';
+}
+
+function vStartProg() {
+  clearInterval(vProgInt);
+  vSimTime = 0; vSimDur = 180 + Math.floor(Math.random() * 120);
+  const td = document.getElementById('vTDur');
+  if (td) td.textContent = fmt(vSimDur);
+  vProgInt = setInterval(() => {
+    if (!vPlaying) return;
+    vSimTime = Math.min(vSimTime + 1, vSimDur);
+    const pct = Math.round(vSimTime / vSimDur * 100);
+    const pf = document.getElementById('vProgFill');
+    const tc = document.getElementById('vTCur');
+    const dt = document.getElementById('vDispTime');
+    if (pf) pf.style.width = pct + '%';
+    if (tc) tc.textContent = fmt(vSimTime);
+    if (dt) dt.textContent = fmt(vSimTime);
+    if (vSimTime >= vSimDur) vNextTrack();
+  }, 1000);
+}
+
+function vSeekClick(e) {
+  const bg = document.getElementById('vProgBg');
+  if (!bg) return;
+  const pct = e.offsetX / bg.offsetWidth;
+  vSimTime = Math.round(pct * vSimDur);
+  const pf = document.getElementById('vProgFill');
+  const tc = document.getElementById('vTCur');
+  if (pf) pf.style.width = Math.round(pct * 100) + '%';
+  if (tc) tc.textContent = fmt(vSimTime);
+}
+
+function vLoadEmbed() {
+  const song = vSongs[vCurIdx];
+  if (!song) return;
+  const fr  = document.getElementById('vYtFr');
+  const ph  = document.getElementById('vAudioPh');
+  const pl  = document.getElementById('vAudioPlaying');
+  const ttl = document.getElementById('vAudioTitle');
+  const lnk = document.getElementById('vAudioLink');
+  const id  = getYTId(song.url);
+  if (id) {
+    if (fr)  fr.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+    if (ph)  ph.style.display = 'none';
+    if (pl)  pl.style.display = 'flex';
+    if (ttl) ttl.textContent  = song.name.toUpperCase();
+    if (lnk) lnk.href         = song.url;
+  } else {
+    if (ph)  { ph.style.display = ''; ph.textContent = 'Invalid URL ✕'; }
+    if (pl)  pl.style.display = 'none';
+    if (fr)  fr.src = '';
+  }
+}
+
+function vClearEmbed() {
+  const fr  = document.getElementById('vYtFr');
+  const ph  = document.getElementById('vAudioPh');
+  const pl  = document.getElementById('vAudioPlaying');
+  if (fr) fr.src = '';
+  if (ph) { ph.style.display = ''; ph.textContent = '\u266a select a track to play'; }
+  if (pl) pl.style.display = 'none';
+}
+
+/* View mode waveform */
+function vStartWave() {
+  const vc = document.getElementById('vWc');
+  if (!vc) return;
+  if (vAfId) cancelAnimationFrame(vAfId);
+  const ctx2 = vc.getContext('2d');
+  const vBars = Array.from({ length: 36 }, () => ({ h: 0.04, t: Math.random() * 0.3 + 0.04 }));
+  function drawV() {
+    const W = vc.width, H = vc.height;
+    ctx2.clearRect(0, 0, W, H);
+    const bw = Math.floor(W / vBars.length) - 1;
+    vBars.forEach((b, i) => {
+      if (vPlaying) {
+        b.t += (Math.random() - 0.5) * 0.22;
+        b.t  = Math.max(0.03, Math.min(0.93, b.t));
+        b.h += (b.t - b.h) * 0.18;
+        if (Math.random() < 0.05) b.t = Math.random() * 0.9 + 0.04;
+      } else {
+        b.h += (0.04 - b.h) * 0.1;
+      }
+      const bh = Math.round(b.h * H * 0.86);
+      const x  = i * (bw + 1);
+      const y  = Math.floor((H - bh) / 2);
+      const a  = 0.4 + b.h * 0.6;
+      ctx2.fillStyle = i % 3 === 0
+        ? `rgba(255,153,0,${a})`
+        : i % 3 === 1
+          ? `rgba(255,200,0,${a * 0.7})`
+          : `rgba(255,120,0,${a * 0.5})`;
+      ctx2.fillRect(x, y, bw, bh);
+    });
+    vAfId = requestAnimationFrame(drawV);
+  }
+  drawV();
+}

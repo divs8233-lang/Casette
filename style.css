@@ -318,8 +318,6 @@ canvas { display: block; width: 100%; height: 44px; }
   border: 2px solid #2a1400;
   border-radius: 6px;
   padding: 10px 14px;
-  position: relative;
-  overflow: hidden;
   min-height: 42px;
   display: flex; align-items: center;
   box-shadow: 0 0 10px rgba(255,140,0,0.1) inset;
@@ -560,3 +558,62 @@ textarea  { resize: none; }
   box-shadow: 0 4px 16px rgba(60,100,180,0.2);
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ══════════════════════════════════════════
+   VIEW MODE — shared tape read-only layout
+   ══════════════════════════════════════════ */
+
+/* CTA banner */
+.view-cta {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.1));
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 7px; padding: 10px 14px; margin-bottom: 14px;
+  font-family: 'Architects Daughter', cursive; font-size: 13px; color: #4455aa;
+  flex-wrap: wrap; gap: 8px;
+}
+.view-cta-btn {
+  background: linear-gradient(135deg, rgba(139,92,246,0.7), rgba(236,72,153,0.6));
+  color: #fff; font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+  padding: 7px 16px; border-radius: 5px; text-decoration: none; letter-spacing: 1px;
+  transition: opacity 0.2s; white-space: nowrap;
+}
+.view-cta-btn:hover { opacity: 0.85; }
+
+.view-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .view-layout { grid-template-columns: 1fr; } }
+
+/* Big cassette card in view mode */
+.view-cass-card {
+  background: rgba(255,255,255,0.5); border: 1px solid rgba(180,210,240,0.5);
+  border-radius: 8px; padding: 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.view-big-cass {
+  width: 200px;
+  background: linear-gradient(160deg,#2a2a3c,#18182a);
+  border-radius: 6px 6px 10px 10px; border: 2px solid #3a3a55;
+  padding: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+}
+
+/* Meta (artist, year, message) */
+.view-meta {
+  width: 100%; font-family: 'Architects Daughter', cursive;
+  font-size: 11px; color: #5566aa; line-height: 1.7; text-align: center;
+}
+.view-meta .vm-row { padding: 2px 0; }
+.view-meta .vm-msg {
+  margin-top: 6px; font-size: 11px; color: #8899cc; font-style: italic;
+  background: rgba(139,92,246,0.06); border-radius: 5px; padding: 6px 10px;
+  text-align: left; font-family: 'Nunito', sans-serif;
+}
+
+/* Read-only tracklist */
+.view-tracklist {
+  background: rgba(255,255,255,0.55); border: 1px solid rgba(180,210,240,0.5);
+  border-radius: 8px; padding: 14px; margin-top: 12px;
+}
+.view-tl-title {
+  font-family: 'Architects Daughter', cursive; font-size: 12px;
+  color: #5577bb; margin-bottom: 8px;
+}
