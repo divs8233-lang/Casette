@@ -147,23 +147,17 @@
               </div>
             </div>
 
-            <!-- Embed area -->
-            <div class="embed-area">
-              <div class="yt-outer">
-                <div class="yt-ph" id="ytPh">
-                  <span style="font-size:24px;">▶</span>
-                  <span>SELECT A TRACK</span>
-                </div>
-                <iframe id="ytFr" class="yt-frame" src="" allowfullscreen
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
-                  title="YouTube player"></iframe>
-                <div class="sp-embed-wrap" id="spWrap">
-                  <iframe id="spFr" src=""
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy" title="Spotify player"></iframe>
-                </div>
-                <div class="embed-badge" id="embedBadge" style="display:none;">YOUTUBE</div>
+            <!-- Audio bar: iframe is 1px so only audio plays, no visible video -->
+            <div class="audio-bar" id="audioBar">
+              <div class="audio-bar-ph" id="audioBarPh">&#9834; select a track to play</div>
+              <div class="audio-bar-playing" id="audioBarPlaying" style="display:none;">
+                <div class="audio-bar-dot" id="audioBarDot"></div>
+                <div class="audio-bar-title" id="audioBarTitle">&#8212;</div>
+                <a class="audio-bar-yt" id="audioBarLink" href="#" target="_blank" rel="noopener">YT &#8599;</a>
               </div>
+              <iframe id="ytFr" src="" allow="autoplay; clipboard-write; encrypted-media"
+                style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:none;top:0;left:0;"
+                title="YouTube audio"></iframe>
             </div>
           </div>
 
