@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VHS Mix — Make your tape, share the vibe, rewind forever.">
+  <meta property="og:title" content="VHS Mix">
+  <meta property="og:description" content="Make your tape, share the vibe, rewind forever.">
+  <meta property="og:type" content="website">
+  <title>VHS Mix — Tape Studio</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=VT323&family=Nunito:wght@400;600;700;800&family=Architects+Daughter&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="bg" aria-hidden="true"></div>
+  <div class="bg-orb" style="width:300px;height:300px;top:-80px;right:-60px;" aria-hidden="true"></div>
+  <div class="bg-orb" style="width:200px;height:200px;bottom:80px;left:-40px;" aria-hidden="true"></div>
+  <div class="bg-orb" style="width:150px;height:150px;top:40%;right:10%;" aria-hidden="true"></div>
+  <div class="twee-deco" style="top:8%;left:5%;animation-delay:0s;" aria-hidden="true">✿</div>
+  <div class="twee-deco" style="top:15%;right:8%;animation-delay:1s;" aria-hidden="true">♪</div>
+  <div class="twee-deco" style="top:40%;left:2%;animation-delay:2s;" aria-hidden="true">★</div>
+  <div class="twee-deco" style="top:70%;right:4%;animation-delay:0.5s;" aria-hidden="true">♥</div>
+  <div class="twee-deco" style="top:55%;left:8%;animation-delay:1.5s;" aria-hidden="true">✦</div>
+  <div class="twee-deco" style="top:25%;right:2%;animation-delay:2.5s;" aria-hidden="true">◈</div>
+
+  <!-- Win7 Taskbar -->
+  <div class="win7-bar" role="toolbar" aria-label="Taskbar">
+    <div class="win7-start" title="Start" aria-label="Start">⊞</div>
+    <div class="win7-tray-icon" title="Now Playing">🎵</div>
+    <div class="win7-tray-icon" title="VHS Mix">📼</div>
+    <div class="win7-clock" id="w7clock" aria-live="polite">Loading...</div>
+  </div>
+
+  <!-- App Window -->
+  <main class="app-window" role="main">
+    <div class="titlebar" role="banner">
+      <div class="tb-icon" aria-hidden="true">📼</div>
+      <div class="tb-title">VHS Mix — Tape Studio</div>
+      <div class="tb-btns" aria-label="Window controls">
+        <div class="tb-btn min" title="Minimise" aria-label="Minimise">–</div>
+        <div class="tb-btn max" title="Maximise" aria-label="Maximise">□</div>
+        <div class="tb-btn cls" title="Close" aria-label="Close">✕</div>
+      </div>
+    </div>
+
+    <div class="app-body">
+      <nav class="tabs" role="tablist" aria-label="App sections">
+        <button class="tab active" role="tab" aria-selected="true"  onclick="goTab('player',this)">▶ Player</button>
+        <button class="tab"        role="tab" aria-selected="false" onclick="goTab('record',this)">⦿ Record</button>
+        <button class="tab"        role="tab" aria-selected="false" onclick="goTab('share',this)">♡ Share</button>
+      </nav>
+
+      <!-- ── PLAYER ── -->
+      <section class="panel active" id="tab-player" role="tabpanel" aria-label="Player">
+        <div class="layout">
+
+          <!-- Left: Sony Deck -->
+          <div>
+            <div class="sony-deck">
+              <div class="sony-brand">
+                <div class="sony-logo">SONY</div>
+                <div class="sony-model">CMT-CP505MD</div>
+              </div>
+
+              <!-- Amber display -->
+              <div class="sony-display" aria-live="polite" aria-label="Now playing display">
+                <div class="disp-top">
+                  <div class="disp-source" id="dispSrc">TAPE</div>
+                  <div class="disp-time"   id="dispTime">0:00</div>
+                </div>
+                <div class="disp-track" id="dispTrack">NO TAPE LOADED</div>
+                <div class="disp-dots" aria-hidden="true">
+                  <div class="disp-dot on"></div>
+                  <div class="disp-dot" id="playDot"></div>
+                  <div class="disp-dot"></div>
+                </div>
+              </div>
+
+              <!-- Tape slot -->
+              <div class="tape-slot-outer" aria-label="Tape slot">
+                <div class="slot-ridges" aria-hidden="true"></div>
+                <div class="cassette" id="cassEl" aria-hidden="true">
+                  <div class="cass-reel" id="cr1">
+                    <div class="cass-spoke" style="transform:rotate(0deg)"></div>
+                    <div class="cass-spoke" style="transform:rotate(120deg)"></div>
+                    <div class="cass-spoke" style="transform:rotate(240deg)"></div>
+                    <div class="cass-hub"></div>
+                  </div>
+                  <div class="cass-label-area" id="cassLabelArea" style="background:#8b5cf6;">
+                    <img class="cass-label-img" id="cassLabelImg" src="" alt="Tape cover">
+                    <div class="cass-label-text" id="cassLabelText" style="color:#e8d8ff;">TAPE</div>
+                  </div>
+                  <div class="cass-reel" id="cr2">
+                    <div class="cass-spoke" style="transform:rotate(60deg)"></div>
+                    <div class="cass-spoke" style="transform:rotate(180deg)"></div>
+                    <div class="cass-spoke" style="transform:rotate(300deg)"></div>
+                    <div class="cass-hub"></div>
+                  </div>
+                </div>
+                <div class="slot-label" id="slotLbl">INSERT TAPE ▼</div>
+              </div>
+
+              <!-- Transport controls -->
+              <div class="sony-controls">
+                <button class="s-btn" onclick="prevTrack()" aria-label="Previous track">⏮ PREV</button>
+                <button class="s-btn play-btn" id="playBtn" onclick="togglePlay()" aria-label="Play / Pause">▶ PLAY</button>
+                <button class="s-btn" onclick="nextTrack()" aria-label="Next track">NEXT ⏭</button>
+                <button class="s-btn" onclick="ejectTape()" aria-label="Eject tape">⏏ EJECT</button>
+              </div>
+
+              <!-- Volume / progress -->
+              <div class="knob-row">
+                <div class="vol-knob-wrap">
+                  <div class="vol-knob" id="volKnob" title="Volume" aria-hidden="true"></div>
+                  <div class="knob-label">VOL</div>
+                </div>
+                <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="60"
+                  aria-label="Volume" oninput="setVolume(this.value)">
+                <div class="vol-knob-wrap">
+                  <div class="vol-knob" style="width:20px;height:20px;" aria-hidden="true"></div>
+                  <div class="knob-label">BASS</div>
+                </div>
+              </div>
+
+              <div class="prog-wrap">
+                <div class="prog-bar-bg" id="progBg" onclick="seekClick(event)"
+                  role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                  aria-label="Track progress" tabindex="0">
+                  <div id="progFill" class="prog-bar-fill" style="width:0%"></div>
+                </div>
+                <div class="prog-times" aria-hidden="true">
+                  <span id="tCur">0:00</span><span id="tDur">0:00</span>
+                </div>
+              </div>
+
+              <!-- Waveform -->
+              <div class="wave-section" aria-hidden="true">
+                <div class="wave-lbl-row">
+                  <div class="w-dot" id="wDot"></div>
+                  <div class="w-lbl">AUDIO OUT</div>
+                </div>
+                <canvas id="wc" width="280" height="44"></canvas>
+              </div>
+            </div>
+
+            <!-- Embed area -->
+            <div class="embed-area">
+              <div class="yt-outer">
+                <div class="yt-ph" id="ytPh">
+                  <span style="font-size:24px;">▶</span>
+                  <span>SELECT A TRACK</span>
+                </div>
+                <iframe id="ytFr" class="yt-frame" src="" allowfullscreen
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
+                  title="YouTube player"></iframe>
+                <div class="sp-embed-wrap" id="spWrap">
+                  <iframe id="spFr" src=""
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy" title="Spotify player"></iframe>
+                </div>
+                <div class="embed-badge" id="embedBadge" style="display:none;">YOUTUBE</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Song panel -->
+          <div>
+            <div class="song-panel">
+              <div class="sp-title">Add to Tracklist</div>
+
+              <div class="type-toggle" role="group" aria-label="Add type">
+                <button class="tt-btn on" id="ttSingle"   onclick="setAddType('single',this)">Single Track</button>
+                <button class="tt-btn"    id="ttPlaylist" onclick="setAddType('playlist',this)">Spotify Playlist</button>
+              </div>
+
+              <div id="singleForm">
+                <div class="row2" style="margin-bottom:6px;">
+                  <div style="flex:1;">
+                    <label class="fi" for="sName">Song Name</label>
+                    <input type="text" id="sName" placeholder="e.g. Breathe (2 AM)" maxlength="40">
+                  </div>
+                  <div>
+                    <label class="fi" for="sPlatform">Platform</label>
+                    <select id="sPlatform" class="plat-sel">
+                      <option value="youtube">YouTube</option>
+                      <option value="spotify">Spotify</option>
+                    </select>
+                  </div>
+                </div>
+                <label class="fi" for="sUrl">URL</label>
+                <input type="url" id="sUrl" placeholder="https://youtube.com/watch?v=...">
+              </div>
+
+              <div id="playlistForm" style="display:none;">
+                <label class="fi" for="plName">Playlist Name</label>
+                <input type="text" id="plName" placeholder="e.g. My 2003 Playlist" maxlength="40">
+                <label class="fi" for="plUrl" style="margin-top:6px;display:block;">Spotify Playlist URL</label>
+                <input type="url" id="plUrl" placeholder="https://open.spotify.com/playlist/...">
+              </div>
+
+              <button class="add-btn" onclick="addItem()">+ Add to Tape</button>
+
+              <div class="song-list" id="songList" role="list" aria-label="Tracklist">
+                <div style="text-align:center;color:#aabbd0;font-size:11px;padding:12px 0;font-family:'Architects Daughter',cursive;">
+                  no tracks yet ✿
+                </div>
+              </div>
+
+              <!-- Label customiser -->
+              <div class="label-section">
+                <div class="ls-title">Tape Label</div>
+                <div class="color-chips" id="chipRow" role="group" aria-label="Label colour">
+                  <div class="cc sel" style="background:#8b5cf6;" onclick="setCC(this,'#8b5cf6','#e8d8ff')" role="radio" aria-checked="true"  aria-label="Purple" tabindex="0"></div>
+                  <div class="cc"     style="background:#ec4899;" onclick="setCC(this,'#ec4899','#ffe0f0')" role="radio" aria-checked="false" aria-label="Pink"   tabindex="0"></div>
+                  <div class="cc"     style="background:#06b6d4;" onclick="setCC(this,'#06b6d4','#d0f0ff')" role="radio" aria-checked="false" aria-label="Cyan"   tabindex="0"></div>
+                  <div class="cc"     style="background:#22c55e;" onclick="setCC(this,'#22c55e','#d0fde0')" role="radio" aria-checked="false" aria-label="Green"  tabindex="0"></div>
+                  <div class="cc"     style="background:#f59e0b;" onclick="setCC(this,'#f59e0b','#fff3d0')" role="radio" aria-checked="false" aria-label="Amber"  tabindex="0"></div>
+                  <div class="cc"     style="background:#ef4444;" onclick="setCC(this,'#ef4444','#ffd8d8')" role="radio" aria-checked="false" aria-label="Red"    tabindex="0"></div>
+                </div>
+
+                <label class="fi" style="margin-top:8px;">Upload Cover Image</label>
+                <div class="cover-upload-area" id="cuaEl">
+                  <input type="file" accept="image/*" id="coverFileInput"
+                    onchange="handleCoverUpload(event)" aria-label="Upload cover image">
+                  <img class="cover-preview" id="coverPreview" src="" alt="Cover preview">
+                  <div class="cua-inner" id="cuaInner">
+                    <div class="cua-icon" aria-hidden="true">🖼</div>
+                    <div class="cua-text">CLICK TO UPLOAD COVER</div>
+                  </div>
+                </div>
+
+                <div class="mini-tape" id="miniTape" aria-label="Tape preview">
+                  <div class="mt-cass" aria-hidden="true">
+                    <div class="mt-reel"></div>
+                    <div class="mt-label" id="mtLabel" style="background:#8b5cf6;">
+                      <img class="mt-label-img" id="mtLabelImg" src="" alt="">
+                      <div class="mt-label-text" id="mtLabelText">
+                        <div class="mtlt-title" id="mtTitle" style="color:#e8d8ff;">TAPE</div>
+                        <div class="mtlt-sub"   id="mtSub"   style="color:#e8d8ff;">no title yet</div>
+                      </div>
+                    </div>
+                    <div class="mt-reel"></div>
+                  </div>
+                  <div class="mt-info">
+                    <div class="mt-info-title" id="mtInfoTitle">No Title</div>
+                    <div class="mt-info-sub"   id="mtInfoSub">Add a title in Record mode</div>
+                    <div class="mt-info-count" id="mtCount">0 tracks</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── RECORD ── -->
+      <section class="panel" id="tab-record" role="tabpanel" aria-label="Record">
+        <div class="rec-window">
+          <div class="rec-header-row">
+            <div class="rec-indicator" id="recInd" aria-hidden="true"></div>
+            <div class="rec-header-title">✿ Record Your Tape</div>
+          </div>
+          <div class="rec-layout">
+            <div>
+              <div class="rec-field">
+                <label for="recTitle">Tape Title</label>
+                <input type="text" id="recTitle" placeholder="e.g. Summer Hits 2003" maxlength="24" oninput="updateRecVis()">
+              </div>
+              <div class="rec-field">
+                <label for="recSub">Vibe / Subtitle</label>
+                <input type="text" id="recSub" placeholder="late nights &amp; slow jams" maxlength="34" oninput="updateRecVis()">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="rec-field">
+                  <label for="recArtist">Mix By</label>
+                  <input type="text" id="recArtist" placeholder="your name" maxlength="20" oninput="updateRecVis()">
+                </div>
+                <div class="rec-field">
+                  <label for="recYear">Year</label>
+                  <input type="text" id="recYear" placeholder="2003" maxlength="4" oninput="updateRecVis()">
+                </div>
+              </div>
+              <div class="rec-field">
+                <label for="recMsg">Personal Message</label>
+                <textarea id="recMsg" rows="3" placeholder="This tape is for..."></textarea>
+              </div>
+              <div class="rec-field">
+                <label>Label Colour</label>
+                <div class="color-chips" id="recChips" role="group" aria-label="Label colour">
+                  <div class="cc sel" style="background:#8b5cf6;" onclick="setRecCC(this,'#8b5cf6','#e8d8ff')" role="radio" aria-checked="true"  aria-label="Purple" tabindex="0"></div>
+                  <div class="cc"     style="background:#ec4899;" onclick="setRecCC(this,'#ec4899','#ffe0f0')" role="radio" aria-checked="false" aria-label="Pink"   tabindex="0"></div>
+                  <div class="cc"     style="background:#06b6d4;" onclick="setRecCC(this,'#06b6d4','#d0f0ff')" role="radio" aria-checked="false" aria-label="Cyan"   tabindex="0"></div>
+                  <div class="cc"     style="background:#22c55e;" onclick="setRecCC(this,'#22c55e','#d0fde0')" role="radio" aria-checked="false" aria-label="Green"  tabindex="0"></div>
+                  <div class="cc"     style="background:#f59e0b;" onclick="setRecCC(this,'#f59e0b','#fff3d0')" role="radio" aria-checked="false" aria-label="Amber"  tabindex="0"></div>
+                </div>
+              </div>
+              <button class="save-btn" onclick="saveTape()">✿ Save Tape to Player</button>
+            </div>
+
+            <div class="big-cass-vis">
+              <div class="big-cassette">
+                <div class="big-cass-label" id="bcLabel" style="background:#8b5cf6;">
+                  <img class="bcl-img" id="bclImg" src="" alt="Tape cover">
+                  <div class="bcl-title" id="bclTitle" style="color:#e8d8ff;">UNTITLED TAPE</div>
+                  <div class="bcl-sub"   id="bclSub"   style="color:#e8d8ff;">add a vibe above</div>
+                </div>
+                <div class="big-reels-row">
+                  <div class="big-reel">
+                    <div class="br-spokes" id="brs1">
+                      <div class="br-spoke" style="transform:rotate(0deg)"></div>
+                      <div class="br-spoke" style="transform:rotate(90deg)"></div>
+                      <div class="br-spoke" style="transform:rotate(180deg)"></div>
+                      <div class="br-spoke" style="transform:rotate(270deg)"></div>
+                    </div>
+                    <div class="br-hub"></div>
+                  </div>
+                  <div class="big-reel">
+                    <div class="br-spokes" id="brs2">
+                      <div class="br-spoke" style="transform:rotate(45deg)"></div>
+                      <div class="br-spoke" style="transform:rotate(135deg)"></div>
+                      <div class="br-spoke" style="transform:rotate(225deg)"></div>
+                      <div class="br-spoke" style="transform:rotate(315deg)"></div>
+                    </div>
+                    <div class="br-hub"></div>
+                  </div>
+                </div>
+                <div class="big-cass-tape-strip"></div>
+                <div class="big-cass-bottom">
+                  <div class="bc-screw"></div>
+                  <div class="bc-screw"></div>
+                </div>
+              </div>
+              <div class="rec-counter-box" id="recCtr">00:00:00</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SHARE ── -->
+      <section class="panel" id="tab-share" role="tabpanel" aria-label="Share">
+        <div class="share-window">
+          <div class="share-tape-preview">
+            <div class="big-share-cass">
+              <div class="bsc-label" id="bscLabel" style="background:#8b5cf6;">
+                <img class="bsc-img" id="bscImg" src="" alt="Tape cover">
+                <div class="bsc-title" id="bscTitle" style="color:#e8d8ff;">NO TITLE YET</div>
+                <div class="bsc-sub"   id="bscSub"   style="color:#e8d8ff;">set in record mode</div>
+              </div>
+              <div class="bsc-reels">
+                <div class="bsc-reel"><div class="bsc-hub"></div></div>
+                <div class="bsc-reel"><div class="bsc-hub"></div></div>
+              </div>
+              <div class="bsc-strip"></div>
+              <div class="bsc-count" id="bscCount" style="color:#8b5cf6;">0 tracks</div>
+            </div>
+          </div>
+
+          <div style="font-size:10px;color:#7799bb;font-family:'Nunito',sans-serif;margin-bottom:6px;letter-spacing:0.5px;">
+            ✿ This link contains your full tape — anyone who opens it will see the same tracks, title, and colours.
+            Cover images are not included in the link (re-upload on the other device).
+          </div>
+          <div class="share-link-row">
+            <div class="share-link-box" id="shareLinkEl" aria-label="Shareable link"
+              style="cursor:text;user-select:all;" title="Click to select all">
+              Add tracks &amp; save your tape to generate a link ✿
+            </div>
+            <button class="sh-btn" onclick="copyLink()">Copy Link</button>
+          </div>
+          <div class="sh-btns-row">
+            <button class="dl-btn" onclick="downloadTape()">⬇ Download Tracklist</button>
+            <button class="sh-btn" onclick="tweetTape()">Tweet This Tape</button>
+            <button class="sh-btn" onclick="whatsappTape()">WhatsApp</button>
+          </div>
+
+          <div class="tracklist-preview" id="tlPreview">
+            <div class="tlp-title">✿ Tracklist</div>
+            <div id="tlItems" style="color:#aabbd0;font-size:11px;font-family:'Architects Daughter',cursive;">No tracks yet.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Done!</div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
