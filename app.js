@@ -50,7 +50,7 @@ function setPlatform(plat, el) {
     if (hint) hint.style.display = 'none';
   } else {
     if (lbl)  lbl.textContent    = 'SoundCloud embed src URL';
-    if (inp)  inp.placeholder    = 'https://w.soundcloud.com/player/?url=...';
+    if (inp)  inp.placeholder    = 'https://soundcloud.com/artist/track-name';
     if (hint) hint.style.display = '';
   }
 }
