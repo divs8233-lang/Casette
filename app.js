@@ -275,33 +275,42 @@ function mediaCommand(cmd) {
 }
 
 function loadEmbed() {
-  const song = songs[curIdx];
+  const song    = songs[curIdx];
   if (!song) return;
-  const ytFr = document.getElementById('ytFr');
-  const scFr = document.getElementById('scFr');
-  const ph   = document.getElementById('audioBarPh');
-  const pl   = document.getElementById('audioBarPlaying');
-  const ttl  = document.getElementById('audioBarTitle');
-  const lnk  = document.getElementById('audioBarLink');
+  const ytFr    = document.getElementById('ytFr');
+  const scFr    = document.getElementById('scFr');
+  const scWrap  = document.getElementById('scEmbedWrap');
+  const audioBar= document.getElementById('audioBar');
+  const ph      = document.getElementById('audioBarPh');
+  const pl      = document.getElementById('audioBarPlaying');
+  const ttl     = document.getElementById('audioBarTitle');
+  const lnk     = document.getElementById('audioBarLink');
 
-  if (ytFr) ytFr.src = '';
-  if (scFr) scFr.src = '';
+  // Reset
+  if (ytFr)   ytFr.src = '';
+  if (scFr)   scFr.src = '';
+  if (scWrap) scWrap.style.display = 'none';
 
   if (song.platform === 'soundcloud') {
+    // Show the visible SC embed panel; hide the audio-bar playing state
     const enc = encodeURIComponent(song.url);
-    if (scFr) scFr.src = `https://w.soundcloud.com/player/?url=${enc}&auto_play=true&hide_related=true&show_comments=false&show_user=false&visual=false`;
+    if (scFr)   scFr.src = `https://w.soundcloud.com/player/?url=${enc}&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false&color=%23ff5500`;
+    if (scWrap) scWrap.style.display = '';
+    // Audio bar shows track name as "now selected"
     if (ph)  ph.style.display = 'none';
     if (pl)  pl.style.display = 'flex';
     if (ttl) ttl.textContent  = song.name.toUpperCase();
-    if (lnk) { lnk.href = song.url; lnk.textContent = 'SC ↗'; }
+    if (lnk) { lnk.href = song.url; lnk.textContent = '↗'; }
   } else {
+    // YouTube: hidden iframe, audio bar shows playing state
+    if (scWrap) scWrap.style.display = 'none';
     const id = getYTId(song.url);
     if (id && ytFr) {
       ytFr.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
       if (ph)  ph.style.display = 'none';
       if (pl)  pl.style.display = 'flex';
       if (ttl) ttl.textContent  = song.name.toUpperCase();
-      if (lnk) { lnk.href = song.url; lnk.textContent = 'YT ↗'; }
+      if (lnk) { lnk.href = song.url; lnk.textContent = '↗'; }
     } else {
       if (ph) { ph.style.display = ''; ph.textContent = 'Invalid URL ✕'; }
       if (pl) pl.style.display = 'none';
@@ -310,13 +319,15 @@ function loadEmbed() {
 }
 
 function clearEmbed() {
-  const ytFr = document.getElementById('ytFr');
-  const scFr = document.getElementById('scFr');
-  const ph   = document.getElementById('audioBarPh');
-  const pl   = document.getElementById('audioBarPlaying');
-  if (ytFr) ytFr.src = '';
-  if (scFr) scFr.src = '';
-  if (ph) { ph.style.display = ''; ph.textContent = '\u266a select a track to play'; }
+  const ytFr   = document.getElementById('ytFr');
+  const scFr   = document.getElementById('scFr');
+  const scWrap = document.getElementById('scEmbedWrap');
+  const ph     = document.getElementById('audioBarPh');
+  const pl     = document.getElementById('audioBarPlaying');
+  if (ytFr)   ytFr.src = '';
+  if (scFr)   scFr.src = '';
+  if (scWrap) scWrap.style.display = 'none';
+  if (ph) { ph.style.display = ''; ph.textContent = '♪ select a track to play'; }
   if (pl) pl.style.display = 'none';
 }
 
@@ -739,33 +750,53 @@ function vMediaCommand(cmd) {
 }
 
 function vLoadEmbed() {
-  const song=vSongs[vCurIdx]; if(!song) return;
-  const ytFr=document.getElementById('vYtFr'), scFr=document.getElementById('vScFr');
-  const ph=document.getElementById('vAudioPh'), pl=document.getElementById('vAudioPlaying');
-  const ttl=document.getElementById('vAudioTitle'), lnk=document.getElementById('vAudioLink');
-  if(ytFr) ytFr.src=''; if(scFr) scFr.src='';
-  if(song.platform==='soundcloud'){
-    const enc=encodeURIComponent(song.url);
-    if(scFr) scFr.src=`https://w.soundcloud.com/player/?url=${enc}&auto_play=true&hide_related=true&show_comments=false&show_user=false&visual=false`;
-    if(ph) ph.style.display='none'; if(pl) pl.style.display='flex';
-    if(ttl) ttl.textContent=song.name.toUpperCase(); if(lnk){lnk.href=song.url;lnk.textContent='SC ↗';}
+  const song    = vSongs[vCurIdx]; if (!song) return;
+  const ytFr    = document.getElementById('vYtFr');
+  const scFr    = document.getElementById('vScFr');
+  const scWrap  = document.getElementById('vScEmbedWrap');
+  const ph      = document.getElementById('vAudioPh');
+  const pl      = document.getElementById('vAudioPlaying');
+  const ttl     = document.getElementById('vAudioTitle');
+  const lnk     = document.getElementById('vAudioLink');
+
+  if (ytFr)   ytFr.src = '';
+  if (scFr)   scFr.src = '';
+  if (scWrap) scWrap.style.display = 'none';
+
+  if (song.platform === 'soundcloud') {
+    const enc = encodeURIComponent(song.url);
+    if (scFr)   scFr.src = `https://w.soundcloud.com/player/?url=${enc}&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false&color=%23ff5500`;
+    if (scWrap) scWrap.style.display = '';
+    if (ph)  ph.style.display = 'none';
+    if (pl)  pl.style.display = 'flex';
+    if (ttl) ttl.textContent  = song.name.toUpperCase();
+    if (lnk) { lnk.href = song.url; lnk.textContent = '↗'; }
   } else {
-    const id=getYTId(song.url);
-    if(id&&ytFr){
-      ytFr.src=`https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
-      if(ph) ph.style.display='none'; if(pl) pl.style.display='flex';
-      if(ttl) ttl.textContent=song.name.toUpperCase(); if(lnk){lnk.href=song.url;lnk.textContent='YT ↗';}
+    const id = getYTId(song.url);
+    if (id && ytFr) {
+      ytFr.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
+      if (ph)  ph.style.display = 'none';
+      if (pl)  pl.style.display = 'flex';
+      if (ttl) ttl.textContent  = song.name.toUpperCase();
+      if (lnk) { lnk.href = song.url; lnk.textContent = '↗'; }
     } else {
-      if(ph){ph.style.display='';ph.textContent='Invalid URL ✕';} if(pl) pl.style.display='none';
+      if (ph) { ph.style.display = ''; ph.textContent = 'Invalid URL ✕'; }
+      if (pl) pl.style.display = 'none';
     }
   }
 }
 
 function vClearEmbed() {
-  const ytFr=document.getElementById('vYtFr'), scFr=document.getElementById('vScFr');
-  const ph=document.getElementById('vAudioPh'), pl=document.getElementById('vAudioPlaying');
-  if(ytFr) ytFr.src=''; if(scFr) scFr.src='';
-  if(ph){ph.style.display='';ph.textContent='\u266a select a track to play';} if(pl) pl.style.display='none';
+  const ytFr   = document.getElementById('vYtFr');
+  const scFr   = document.getElementById('vScFr');
+  const scWrap = document.getElementById('vScEmbedWrap');
+  const ph     = document.getElementById('vAudioPh');
+  const pl     = document.getElementById('vAudioPlaying');
+  if (ytFr)   ytFr.src = '';
+  if (scFr)   scFr.src = '';
+  if (scWrap) scWrap.style.display = 'none';
+  if (ph) { ph.style.display = ''; ph.textContent = '♪ select a track to play'; }
+  if (pl) pl.style.display = 'none';
 }
 
 function vStartWave() {

@@ -138,9 +138,17 @@
               <div class="audio-bar-playing" id="audioBarPlaying" style="display:none;">
                 <div class="audio-bar-dot"></div>
                 <div class="audio-bar-title" id="audioBarTitle">&#8212;</div>
-                <a class="audio-bar-yt" id="audioBarLink" href="#" target="_blank" rel="noopener">YT &#8599;</a>
+                <a class="audio-bar-yt" id="audioBarLink" href="#" target="_blank" rel="noopener">↗</a>
               </div>
-
+            </div>
+            <!-- SoundCloud visible embed — shown when a SC track is selected -->
+            <div class="sc-embed-wrap" id="scEmbedWrap" style="display:none;">
+              <div class="sc-embed-label">
+                <span class="sc-icon">☁</span> SoundCloud — press play below
+              </div>
+              <iframe id="scFr" src="" width="100%" height="166"
+                allow="autoplay" frameborder="0" scrolling="no"
+                title="SoundCloud player"></iframe>
             </div>
           </div>
 
@@ -400,9 +408,16 @@
             <div class="audio-bar-playing" id="vAudioPlaying" style="display:none;">
               <div class="audio-bar-dot"></div>
               <div class="audio-bar-title" id="vAudioTitle">&#8212;</div>
-              <a class="audio-bar-yt" id="vAudioLink" href="#" target="_blank" rel="noopener">YT &#8599;</a>
+              <a class="audio-bar-yt" id="vAudioLink" href="#" target="_blank" rel="noopener">↗</a>
             </div>
-
+          </div>
+          <div class="sc-embed-wrap" id="vScEmbedWrap" style="display:none;">
+            <div class="sc-embed-label">
+              <span class="sc-icon">☁</span> SoundCloud — press play below
+            </div>
+            <iframe id="vScFr" src="" width="100%" height="166"
+              allow="autoplay" frameborder="0" scrolling="no"
+              title="SoundCloud player"></iframe>
           </div>
         </div>
 
@@ -444,18 +459,10 @@
       allow="autoplay; clipboard-write; encrypted-media"
       allowfullscreen frameborder="0" title="YouTube audio"></iframe>
   </div>
-  <div style="position:fixed;left:-9999px;top:-9999px;width:200px;height:166px;overflow:hidden;" aria-hidden="true">
-    <iframe id="scFr" src="" width="200" height="166"
-      allow="autoplay" frameborder="0" scrolling="no" title="SoundCloud audio"></iframe>
-  </div>
   <div style="position:fixed;left:-9999px;top:-9999px;width:200px;height:113px;overflow:hidden;" aria-hidden="true">
     <iframe id="vYtFr" src="" width="200" height="113"
       allow="autoplay; clipboard-write; encrypted-media"
       allowfullscreen frameborder="0" title="YouTube audio view"></iframe>
-  </div>
-  <div style="position:fixed;left:-9999px;top:-9999px;width:200px;height:166px;overflow:hidden;" aria-hidden="true">
-    <iframe id="vScFr" src="" width="200" height="166"
-      allow="autoplay" frameborder="0" scrolling="no" title="SoundCloud audio view"></iframe>
   </div>
   <script src="app.js"></script>
 </body>

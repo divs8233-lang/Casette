@@ -671,3 +671,23 @@ textarea  { resize: none; }
 }
 .cc:hover  { transform: scale(1.18); }
 .cc.sel    { border-color: rgba(255,255,255,0.9); box-shadow: 0 0 0 2px rgba(0,0,0,0.3); transform: scale(1.1); }
+
+/* ── SoundCloud visible embed ── */
+.sc-embed-wrap {
+  margin-top: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid rgba(255,85,0,0.3);
+  background: #0a0a10;
+}
+.sc-embed-label {
+  padding: 6px 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px; letter-spacing: 2px;
+  color: #ff5500;
+  background: rgba(255,85,0,0.08);
+  border-bottom: 1px solid rgba(255,85,0,0.2);
+  display: flex; align-items: center; gap: 6px;
+}
+.sc-icon { font-size: 13px; }
+.sc-embed-wrap iframe { display: block; }
