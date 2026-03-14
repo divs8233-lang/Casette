@@ -109,7 +109,7 @@ function addItem() {
   const url  = document.getElementById('sUrl').value.trim();
   if (!name) { showToast('Enter a song name ✿'); return; }
   if (!url)  { showToast('Paste a YouTube URL ✿'); return; }
-  if (!getYTId(url)) { showToast('That doesn\'t look like a YouTube URL ✿'); return; }
+  if (!getYTId(url)) { showToast('Paste a YouTube link (youtube.com or youtu.be) ✿'); return; }
   songs.push({ name, url, platform: 'youtube', type: 'single' });
   document.getElementById('sName').value = '';
   document.getElementById('sUrl').value  = '';
@@ -266,8 +266,22 @@ function fmt(s) {
 
 /* ── YouTube audio (video hidden, only audio plays) ── */
 function getYTId(url) {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : null;
+  if (!url) return null;
+  // Handle all YouTube URL formats:
+  // youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID,
+  // music.youtube.com/watch?v=ID, youtube.com/shorts/ID
+  const patterns = [
+    /[?&]v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /\/embed\/([a-zA-Z0-9_-]{11})/,
+    /\/shorts\/([a-zA-Z0-9_-]{11})/,
+    /\/v\/([a-zA-Z0-9_-]{11})/
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
 }
 
 function loadEmbed() {
